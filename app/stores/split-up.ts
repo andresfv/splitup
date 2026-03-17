@@ -155,6 +155,8 @@ export const useSplitUpStore = defineStore('split-up', () => {
             places.value.push(newPlace);
             toast.success('Comercio agregado correctamente');
 
+            return newPlace;
+
         } catch(e) {
             console.error("Error al guardar comercio", e);
             showError(e as NuxtError);
@@ -226,10 +228,99 @@ export const useSplitUpStore = defineStore('split-up', () => {
         };
     };
 
+        // ***BILLS***
+     const bills = ref<Bill[]>([]);
+
+     const getBills = async () => {
+        bills.value = await $fetch<Bill[]>('/api/bills');
+        
+    };
+
+    const addBill = async (bill: Bill) => {
+          try {
+              if (!bill == null) return; 
+           console.log("Guardando factura", bill);
+            const newBill: Bill = await $fetch<Bill>('/api/bills', {
+                method: 'POST',
+                body: { placeId: bill.placeId,
+                    date: bill.date,
+                    amount: bill.amount,
+                    isPaid: bill.isPaid ?? false,
+                 }
+            })
+
+            bills.value.push(newBill);
+            toast.success('Factura agregada correctamente');
+
+            return newBill;
+
+        } catch(e) {
+            console.error("Error al guardar factura", e);
+            showError(e as NuxtError);
+        };
+    };
+
+        const updateBill = async (bill: Bill) => {
+        try {
+            // Validar que la factura existe
+            if (!bill.id) {
+                toast.error('ID de la factura es requerido');
+                return;
+            }
+
+            // Validar monto
+            if (!bill.amount) {
+                toast.error('El monto de la factura es requerido');
+                return;
+            }
+
+            const updatedBill = await $fetch<Bill>(`/api/bills/${bill.id}`, {
+                method: 'PUT',
+                body: {
+                    placeId: bill.placeId,
+                    date: bill.date,
+                    amount: bill.amount,
+                    isPaid: bill.isPaid ?? false,
+                }
+            });
+
+            const index = bills.value.findIndex(p => p.id === bill.id)
+
+            if (index !== -1) {
+                bills.value[index] = updatedBill;
+            }
+
+            toast.success('Factura actualizada correctamente');
+        } catch(e) {
+            showError(e as NuxtError);
+        }
+    };
+
+        const deleteBill = async (bill: Bill) => {
+        try {
+
+            // Validar que la factura existe
+            if (!bills.value.find(p => p.id === bill.id)) {
+                toast.error('La factura no existe');
+                return;
+            }
+
+            await $fetch<string>(`/api/bills/${bill.id}`, {
+                method: 'DELETE',
+            });
+
+            bills.value = bills.value.filter(p => p.id !== bill.id);
+            toast.success('Factura eliminada correctamente');
+        } catch(e) {
+            showError(e as NuxtError);
+        };
+    };
+
     return {
         //---properties---
         members,
         places,
+        bills,
 
         //---actions---
         //members
@@ -243,5 +334,11 @@ export const useSplitUpStore = defineStore('split-up', () => {
         addPlace,
         updatePlace,
         deletePlace,
+
+        //bills
+        getBills,
+        addBill,
+        updateBill,
+        deleteBill,
     };
 },);

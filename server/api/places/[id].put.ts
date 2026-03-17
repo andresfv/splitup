@@ -28,7 +28,10 @@ export default defineEventHandler(async (event) => {
       body.name, id
     );
 
-    return { success: true };
+    return { 
+      id: id,
+      name: body.name,
+     };
 
   } catch (error) {
     console.error('Error al actualizar el place:', error);

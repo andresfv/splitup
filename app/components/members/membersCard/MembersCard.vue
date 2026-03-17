@@ -7,7 +7,7 @@
                 <div>
                     <div v-if="editMode">
                         <input ref="inputRef" v-model="localMember.name"
-                            @keydown.enter="handleMemberUpdate(localMember);" @blur="editCancel()"
+                            @keydown.enter="handleMemberUpdate" @blur="editCancel()"
                             @keydown.escape="editCancel()" class="border px-2 py-1 rounded" />
                     </div>
 
@@ -42,7 +42,7 @@
 
                     <div class="flex items-center space-x-2 mt-4">
                         <input :id="`active-${localMember.id}`" type="checkbox" v-model="localMember.active"
-                            @change="handleMemberUpdate(localMember)" />
+                            @change="handleMemberUpdate()" />
                         <Label :for="`active-${localMember.id}`">Activo</Label>
                     </div>
                 </div>

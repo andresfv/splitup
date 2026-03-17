@@ -3,7 +3,7 @@
 -->
 <template>
   <SidebarProvider>
-    <Sidebar>
+    <Sidebar class="w-52">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -19,11 +19,20 @@
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton as-child>
-              <NuxtLink to="/weeks">
-                <span>Lista de Semanas</span>
+              <NuxtLink to="/bills">
+                <span class="ml-2">Agregar Facturas</span>
+              </NuxtLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton as-child>
+              <NuxtLink to="/bills">
+                <span class="ml-2">Dividir Facturas</span>
               </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -32,7 +41,7 @@
         <Collapsible>
           <SidebarGroup>
             <SidebarGroupLabel as-child>
-              <CollapsibleTrigger class="group flex w-full items-center justify-between">
+              <CollapsibleTrigger class="group flex w-full items-center justify-between cursor-pointer">
                 <span>Administrar</span>
                 <span class="transition-transform group-data-[state=open]:rotate-90">
                   >
@@ -44,16 +53,8 @@
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton as-child>
-                      <NuxtLink to="/manage/bills">
-                        <span>Administrar Facturas</span>
-                      </NuxtLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton as-child>
                       <NuxtLink to="/manage/members">
-                        <span>Administrar Participantes</span>
+                        <span>Participantes</span>
                       </NuxtLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -61,7 +62,7 @@
                   <SidebarMenuItem>
                     <SidebarMenuButton as-child>
                       <NuxtLink to="/manage/places">
-                        <span>Administrar Comercios</span>
+                        <span>Comercios</span>
                       </NuxtLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -74,7 +75,7 @@
       <SidebarRail />
     </Sidebar>
     <SidebarInset>
-     <div class="bg-white dark:bg-black min-h-screen p-6 transition-colors duration-300">
+     <div class="min-h-screen transition-colors duration-300">
         
       <header class="flex justify-end p-4">
           <ThemeToggle />

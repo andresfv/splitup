@@ -21,7 +21,12 @@ export default defineEventHandler(async (event) => {
       [body.name, body.active ? 1 : 0]
     )
 
-    return { id: result.lastID }
+    return {
+      id: result.lastID,
+      name: body.name,
+      active: body.active
+    }
+    
   } catch (error) {
     console.error('Error al crear el miembro:', error);
     throw createError('Error al crear el miembro');

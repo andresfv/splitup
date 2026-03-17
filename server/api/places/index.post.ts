@@ -29,7 +29,9 @@ export default defineEventHandler(async (event) => {
       body.name
     );
 
-    return { id: result.lastID }
+    return { id: result.lastID,
+      name: body.name
+     }
     
   } catch (error) {
     console.error('Error al crear place:', error);

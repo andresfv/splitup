@@ -10,7 +10,7 @@ declare global {
      * Representa un miembro que participa en las compras compartidas.
      */
     interface Member {
-        id: string;
+        id: number;
         name: string;
         active: boolean;
     }
@@ -19,38 +19,27 @@ declare global {
      * Representa un lugar donde se realizan las compras.
      */
     interface Place {
-        id: string;
+        id: number;
         name: string;
-    }
-
-    /**
-     * Representa una semana en el calendario para agrupar las compras.
-     */
-    interface Week {
-        id: string;
-        code: string;
-        startDate: Date;
-        endDate: Date;
     }
 
     /**
      * Representa una compra realizada en un lugar específico durante una semana determinada.
      */
-    interface Purchase {
-        id: string;
-        week: Week;
-        place: Place;
+    interface Bill {
+        id: number;
+        placeId: number;
         amount: number;
         isPaid: boolean;
-        createdAt: Date;
+        date: Date;
     }
 
     /**
      * Representa la relación entre una compra y un miembro, incluyendo la cantidad que le corresponde pagar al miembro.
      */
-    interface PurchaseMember {
-        purchase: Purchase;
-        member: Member;
+    interface BillMember {
+        billId: number;
+        memberId: number;
         shareAmount: number;
     }
 }
