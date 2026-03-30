@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const db = await getDb();
 
     await db.run(
-      'UPDATE members SET name = ?, active = ? WHERE id = ?',
+      'UPDATE member SET name = ?, active = ? WHERE id = ?',
       body.name, body.active ? 1 : 0, id
     );
 

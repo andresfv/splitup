@@ -4,7 +4,7 @@
     </div>
 
      <BillsDialog v-model:open="modalOpen" />
-
+    <!-- TODO: Si no hay registros mostrar un mensaje de que no hay facturas -->
     <div class="grid grid-cols-4 gap-5">
         <BillsCard v-for="bill in bills" :key="bill.id" :bill="bill" />
     </div>
@@ -24,8 +24,8 @@ const modalOpen = ref(false);
 const splitUpStore = useSplitUpStore();
 const bills = computed(() => splitUpStore.bills);
 
-onMounted(() => {
-    splitUpStore.getBills();
+await useAsyncData('init-split-data', async () => {
+    await splitUpStore.initData();
 });
 
 </script>

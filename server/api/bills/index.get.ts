@@ -8,7 +8,7 @@ export default defineEventHandler(async () => {
         
     const db = await getDb();
     const bills = await db.all(
-        'SELECT b.id, b.amount, b.is_paid, b.date, b.place as placeId FROM bills b');
+        'SELECT b.id, b.amount, b.is_paid, b.date, b.place as placeId FROM bill b');
     
     return bills.map(bill => ({
         id: bill.id,

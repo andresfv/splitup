@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     const db = await getDb();
 
     await db.run(
-      'UPDATE bills SET place = ?, amount = ?, is_paid = ?, date = ? WHERE id = ?',
+      'UPDATE bill SET place = ?, amount = ?, is_paid = ?, date = ? WHERE id = ?',
       body.placeId, body.amount, body.isPaid ? 1 : 0, body.date, id
     );
 

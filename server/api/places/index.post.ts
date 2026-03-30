@@ -14,18 +14,8 @@ export default defineEventHandler(async (event) => {
 
     const db = await getDb();
 
-    // Verificar si ya existe un place con ese nombre
-    const existingPlace = await db.get('SELECT id FROM places WHERE name = ?', body.name);
-    
-    if (existingPlace) {
-      throw createError({
-        statusCode: 409,
-        statusMessage: 'Ya existe un comercio con ese nombre'
-      });
-    }
-
     const result = await db.run(
-      'INSERT INTO places (name) VALUES (?)',
+      'INSERT INTO place (name) VALUES (?)',
       body.name
     );
 
@@ -34,7 +24,7 @@ export default defineEventHandler(async (event) => {
      }
     
   } catch (error) {
-    console.error('Error al crear place:', error);
+    console.error('Error al crear el comercio:', error);
     throw createError('Error interno del servidor');
   }
 });

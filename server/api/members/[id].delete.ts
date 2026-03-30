@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   try {
     const db = await getDb();
 
-    await db.run('DELETE FROM members WHERE id = ?', [id])
+    await db.run('DELETE FROM member WHERE id = ?', [id])
 
     return { success: true };
     

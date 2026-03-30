@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { EditIcon, TrashIcon } from 'lucide-vue-next'
+import { EditIcon, TrashIcon } from '@lucide/vue';
 import { useSplitUpStore } from '../../../stores/split-up';
 import ConfirmDialog from '~/components/common/confirmDialog/ConfirmDialog.vue';
 

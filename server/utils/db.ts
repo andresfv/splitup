@@ -5,14 +5,19 @@ import path from 'path';
 let db: Database | null = null;
 
 export async function getDb() {
+    const config = useRuntimeConfig();
+    
+
     if (!db) {
         db = await open({
-            filename: path.join(process.cwd(), 'server/database/splitup.db'),
+            filename: path.resolve(config.dbPath),
             driver: sqlite3.Database
-        })
-    }
-    return db;
-};
+        });
 
+        await db.run('PRAGMA foreign_keys = ON');
+    }
+
+    return db;
+}
 
 

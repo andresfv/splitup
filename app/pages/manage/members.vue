@@ -26,8 +26,8 @@ const modalOpen = ref(false);
 const members = computed(() => splitUpStore.members);
 
 
-onMounted(() => {
-    splitUpStore.getMembers();
+await useAsyncData('init-split-data', async () => {
+    await splitUpStore.initData();
 });
 
 </script>

@@ -15,6 +15,8 @@
         :default-placeholder="defaultPlaceholder"
         :min-value="minValueDV"
         :max-value="maxValueDV"
+        :week-starts-on="props.weekStartsOn ?? 1"
+        @update:model-value="close"
       />
     </PopoverContent>
   </Popover>
@@ -23,8 +25,8 @@
 <script setup lang="ts">
 import type { DateValue } from '@internationalized/date';
 import { DateFormatter, fromDate, getLocalTimeZone, toCalendarDate, today } from '@internationalized/date';
-import { ref } from 'vue';
 import { cn } from '@/lib/utils';
+import { CalendarIcon } from '@lucide/vue';
 
 interface Props {
     modelValue: Date | null;
@@ -33,6 +35,7 @@ interface Props {
     minValue?: Date | null;
     maxValue?: Date | null;
     disabled?: boolean;
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 const props = defineProps<Props>();

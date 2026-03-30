@@ -16,12 +16,12 @@ export default defineEventHandler(async (event) => {
   try {
     const db = await getDb();
 
-    await db.run('DELETE FROM places WHERE id = ?', [id]);
+    await db.run('DELETE FROM place WHERE id = ?', [id]);
 
     return { success: true };
     
   } catch (error) {
-    console.error('Error al eliminar place:', error);
+    console.error('Error al eliminar el comercio:', error);
     throw createError('Error al eliminar el comercio');
   }
 });

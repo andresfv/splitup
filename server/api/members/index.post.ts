@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     const db = await getDb();
 
     const result = await db.run(
-      'INSERT INTO members (name, active) VALUES (?, ?)',
+      'INSERT INTO member (name, active) VALUES (?, ?)',
       [body.name, body.active ? 1 : 0]
     )
 
