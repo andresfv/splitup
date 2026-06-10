@@ -1,6 +1,6 @@
 <template>
     <Dialog :open="open" @update:open="handleClose">
-        <DialogContent>
+        <DialogContent @pointer-down-outside.prevent>
             <DialogHeader>
                 <DialogTitle>Agregar Comercio</DialogTitle>
             </DialogHeader>

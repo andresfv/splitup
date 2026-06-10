@@ -3,13 +3,14 @@
 
         <BillMemberCardHeader :persona="props.member.name" :fechaDesde="fromDate" :fechaHasta="toDate" />
 
-        <div class="border-t border-dashed border-black my-4"></div>
+        <div class="border-t border-dashed border-accent-foreground my-4"></div>
 
         <BillMemberCardBody :billItems="billsByMemberAndBetween" />
 
-        <div class="border-t border-dashed border-black my-4"></div>
+        <div class="border-t border-dashed border-accent-foreground my-4"></div>
 
-        <BillMemberCardFooter :montoTotal="billSummary.total" :montoPagado="billSummary.paid" :montoPendiente="billSummary.pending" />
+        <BillMemberCardFooter :montoTotal="billSummary.total" :montoPagado="billSummary.paid" :montoPendiente="billSummary.pending" 
+            @markAsPaid="handleMarkAsPaid"/>
 
     </div>
 </template>
@@ -32,9 +33,13 @@ const splitUpStore = useSplitUpStore();
 /**
  * Obtiene las facturas del miembro dentro del rango de fechas
  */
-const billsByMemberAndBetween = computed(() => {
+const billsByMemberAndBetween = computed<BillMemberDetailsDTO[]>(() => {
     return splitUpStore.getMemberBillItemsBetweenDates(props.member.id, props.fromDate, props.toDate);
 });
+
+const handleMarkAsPaid = () => {
+    splitUpStore.payAllBillMemberItems( billsByMemberAndBetween.value );
+};
 
 const billSummary = computed<BillSummaryDTO>(() => {
     return splitUpStore.getMemberBillSummary(props.member.id, props.fromDate, props.toDate);

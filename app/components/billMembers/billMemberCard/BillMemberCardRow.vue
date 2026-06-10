@@ -2,7 +2,7 @@
 
     <div class="grid grid-cols-5 text-center">
 
-        <div>
+        <div class="min-w-0 wrap-break-words">
             {{ props.billItem.placeName }}
         </div>
 
@@ -60,13 +60,13 @@ import EditIcon from '~/components/icons/EditIcon.vue';
 import MoneyInput from '~/components/common/moneyInput/MoneyInput.vue';
 
 interface Props {
-    billItem: BillItemDTO;
+    billItem: BillMemberDetailsDTO;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-    updateBillItem: [billItem: BillItemDTO];
+    updateBillItem: [billItem: BillMemberDetailsDTO];
 }>();
 
 const moneyInputRef = ref<InstanceType<typeof MoneyInput> | null>(null);
@@ -81,9 +81,12 @@ function enableEditMode() {
 }
 
 function updateBillItem() {
-    const updatedBillItem: BillItemDTO = {
+
+    const roundedAmount = roundNumber(billItemAmount.value, 0);
+
+    const updatedBillItem: BillMemberDetailsDTO = {
         ...props.billItem,
-        amount: billItemAmount.value,
+        amount: roundedAmount,
         isPaid: billItemIsPaid.value
     };
 

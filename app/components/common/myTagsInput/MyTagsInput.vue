@@ -1,6 +1,6 @@
 <template>
 
-<TagsInput :modelValue="props.modelValue" class="w-75" :disabled="true">
+<TagsInput :modelValue="props.modelValue" class="w-full" :disabled="true">
     <TagsInputItem v-for="item in props.modelValue" :key="item" :value="item">
       <TagsInputItemText />
     </TagsInputItem>

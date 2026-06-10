@@ -85,7 +85,7 @@
       </div>
     </SidebarInset>
   </SidebarProvider>
-  <Toaster position="bottom-center" :expand="true" :close-button="true" close-button-position="top-right" rich-colors />
+  <Toaster position="top-right" :expand="true" :close-button="true" close-button-position="top-right" rich-colors />
 </template>
 
 <script setup lang="ts">

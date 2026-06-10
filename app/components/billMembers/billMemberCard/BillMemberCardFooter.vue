@@ -23,6 +23,15 @@
             </div>
         </div>
 
+      <div v-if="montoPendiente > 0">
+            <Button class="w-full mt-4" 
+                :size="'sm'" 
+                title="Marcar todo como pagado" 
+                @click="$emit('markAsPaid')">
+                Marcar todo como pagado
+            </Button>
+        </div>
+
     </div>
 
 </template>

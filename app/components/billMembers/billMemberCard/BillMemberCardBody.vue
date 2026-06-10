@@ -24,14 +24,14 @@
 import BillMemberCardRow from './BillMemberCardRow.vue';
 
 interface Props {
-    billItems: Array<BillItemDTO>;
+    billItems: Array<BillMemberDetailsDTO>;
 }
 
 const props = defineProps<Props>();
 
 const splitUpStore = useSplitUpStore();
 
-function updateBillItem(billItem: BillItemDTO) {
+function updateBillItem(billItem: BillMemberDetailsDTO) {
     splitUpStore.updateBillItem(billItem);
 }
 

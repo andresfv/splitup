@@ -30,7 +30,6 @@ declare global {
         id: number;
         placeId: number;
         amount: number;
-        // isPaid: boolean;
         date: Date;
     }
 
@@ -46,9 +45,10 @@ declare global {
     }
 
     /**
-     * Representa un ítem de factura que se muestra en la UI, incluyendo el nombre del lugar, la fecha, el monto y si está pagado o no.
+     * Representa un ítem de factura que se muestra en la UI, 
+     * incluyendo el nombre del lugar, la fecha, el monto y si está pagado o no.
      */
-    interface BillItemDTO {
+    interface BillMemberDetailsDTO {
         id: number;
         placeName: string;
         date: Date;
@@ -56,8 +56,19 @@ declare global {
         isPaid: boolean;
     }
 
+
+    interface BillDetailsDTO {
+        id: number;
+        placeName: string;
+        date: Date;
+        totalAmount: number;
+        paidAmount: number;
+        pendingAmount: number;
+    }
+
     /**
-     * Representa un resumen de las facturas, incluyendo el total, lo pagado, lo pendiente y la cantidad de facturas.
+     * Representa un resumen de las facturas por persona, incluyendo 
+     * el total, lo pagado, lo pendiente y la cantidad de facturas.
      * No BD, solo para mostrar en la UI.
      */
     interface BillSummaryDTO {

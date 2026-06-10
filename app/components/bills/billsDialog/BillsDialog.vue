@@ -1,6 +1,6 @@
 <template>
     <Dialog :open="open" @update:open="handleClose">
-        <DialogContent>
+        <DialogContent @pointer-down-outside.prevent>
             <DialogHeader>
                 <DialogTitle>Agregar Factura</DialogTitle>
                <DialogDescription>
@@ -32,7 +32,8 @@
                         </Label>
 
                         <MoneyInput v-model="billAmount" 
-                        :placeholder="'Ingrese el monto de la factura'" required="true"/>
+                        :placeholder="'Ingrese el monto de la factura'" 
+                        required="true"/>
                     </div>
 
                     <div>
@@ -58,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from 'vue-sonner';
 import DatePicker from '~/components/common/datePicker/DatePicker.vue';
 import MoneyInput from '~/components/common/moneyInput/MoneyInput.vue';
 import PlaceAutoComplete from '../placeAutoComplete/PlaceAutoComplete.vue';
@@ -90,9 +92,26 @@ const handleClose = () => {
 };
 
 const handleSubmit = async () => {
+    if (!billPlace.value?.id) {
+        toast.error('El comercio es requerido');
+        return;
+    }
+    if (!billDate.value) {
+        toast.error('La fecha es requerida');
+        return;
+    }
+    if (!billAmount.value || billAmount.value <= 0) {
+        toast.error('El monto debe ser mayor a cero');
+        return;
+    }
+
     try {
-        if (!props.selectedBill) {
-            await splitUpStore.addBill({
+        let bill = props.selectedBill as Bill | undefined;
+
+        billAmount.value = roundNumber(billAmount.value, 0);
+
+        if (!bill?.id) {
+           bill = await splitUpStore.addBill({
                 placeId: billPlace.value.id,
                 date: billDate.value,
                 amount: billAmount.value,
@@ -100,14 +119,14 @@ const handleSubmit = async () => {
 
         } else {
             await splitUpStore.updateBill({
-                id: props.selectedBill.id,
+                id: bill.id,
                 placeId: billPlace.value.id,
                 date: billDate.value,
                 amount: billAmount.value,
             } as Bill);
         }
         
-        await addMemberToBill(members.value, props.selectedBill as Bill);
+        await addMemberToBill(members.value, bill);
         
         splitUpStore.getBills();
 
@@ -137,9 +156,10 @@ watch(props, (newProps) => {
  * @param selectedMembers 
  * @param bill 
  */
-const addMemberToBill = async (selectedMembers: Member[], bill: Bill) => {
-    if(!selectedMembers || !bill) return;
+const addMemberToBill = async (selectedMembers: Member[], bill: Bill | undefined) => {
 
+    if(!selectedMembers || !bill) return;
+    
     const dbSelectedMembers = localBillMembers.value
         .filter(bm => bm.billId === bill.id);
 
@@ -155,7 +175,7 @@ const addMemberToBill = async (selectedMembers: Member[], bill: Bill) => {
             {
                 billId: bill.id,
                 memberId: newBillMember.id,
-                amount: 0,
+                amount: roundNumber(bill.amount / selectedMembers.length, 0), //Distribuye el monto de la factura entre los miembros seleccionados
             } as BillMember
         );
     }

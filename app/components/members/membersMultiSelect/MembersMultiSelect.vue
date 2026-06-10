@@ -4,11 +4,11 @@
         <PopoverTrigger as-child>
           <MyTagsInput :modelValue="selectedMemberNames" :disabled="true" />
         </PopoverTrigger>
-
         <PopoverContent class="w-64 p-2 space-y-1">
             <div v-for="item in options" :key="item.id"
-                class="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted cursor-pointer">
-                <input type="checkbox" :checked="isSelected(item)" @change="toggle(item)"/>
+                class="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted cursor-pointer"
+                @click="toggle(item)">
+                <input type="checkbox" :checked="isSelected(item)"/>
                 <span>{{ item.name }}</span>
             </div>
         </PopoverContent>

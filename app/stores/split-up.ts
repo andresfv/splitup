@@ -1,8 +1,12 @@
 import { toast } from 'vue-sonner';
 
-//TODO: Mejorar validaciones del lado del servidor, deforma que devuelva errores más especificos con status 400
-
+//TODO: Mejorar validaciones del lado del servidor, de forma que devuelva errores más especificos con status 400
 export const useSplitUpStore = defineStore('split-up', () => {
+
+    // ***BILLS FILTER DATES***
+    const fromDate = ref<Date | null>(normalizeDate(getFirstDayOfCurrentMonth()));
+    const toDate = ref<Date | null>(normalizeDate(getLastDayOfCurrentMonth()));
+
     // ***MEMBERS***
     const members = ref<Member[]>([]);
 
@@ -329,6 +333,64 @@ export const useSplitUpStore = defineStore('split-up', () => {
         };
     };
 
+    const getBillsBetweenDates = (fromDate: Date | null, toDate: Date | null) => {
+
+        if(!fromDate || !toDate){
+            return [];
+        }
+
+        // Normalizar fechas para comparar solo día/mes/año (sin hora)
+        const fromDateNormalized = normalizeDate(fromDate);
+        const toDateNormalized = normalizeDate(toDate);
+        const filteredBills: Bill[] = [];
+
+        for(const bill of bills.value){
+            const billDateNormalized = normalizeDate(bill.date);
+
+            // Si la fecha de la factura está fuera del rango, saltar a la siguiente iteración
+            if(billDateNormalized < fromDateNormalized || billDateNormalized > toDateNormalized){
+                continue;
+            }
+
+            filteredBills.push(bill);
+        }
+
+        filteredBills.sort((a, b) => normalizeDate(b.date).getTime() - normalizeDate(a.date).getTime());
+
+        return filteredBills
+    }
+
+    const getBillSumary = (billId: number): BillSummaryDTO => {
+        const bill = bills.value.find(b => b.id === billId);
+        if (!bill) {
+            return {
+                    total: 0,
+                    paid: 0,
+                    pending: 0,
+                    count: 0
+            }
+        }
+
+        const billMembersByBill = getBillMembersByBillId(billId);
+        let paidAmount = 0;
+
+        for (const bm of billMembersByBill) {
+            if (bm.isPaid) {
+                paidAmount += bm.amount;
+            }
+        }
+
+        const billAmount = bill.amount ?? 0;
+        const pendingAmount = billAmount - paidAmount;
+
+        return {
+            total: billAmount,
+            paid: paidAmount,
+            pending: pendingAmount,
+            count: billMembersByBill.length
+        };
+    }
+
     // ***BILL_MEMBERS***
     const billMembers = ref<BillMember[]>([]);
 
@@ -400,6 +462,26 @@ export const useSplitUpStore = defineStore('split-up', () => {
         };
     };
 
+    const isBillPaid = (billId: number) => {
+        const billMembersByBill = getBillMembersByBillId(billId);
+        let paidAmount = 0;
+        
+        for (const bm of billMembersByBill) {
+            if (bm.isPaid) {
+                paidAmount += bm.amount;
+            }
+        }
+
+        const bill = bills.value.find(b => b.id === billId);
+        const billAmount = bill?.amount ?? 0;
+        
+        return billAmount <= paidAmount;
+    }
+
+    /**
+     * Inicializa los datos necesarios para la aplicación, como miembros, comercios, facturas y relaciones factura-miembro. 
+     * Si alguna de las listas ya contiene datos, se omite la llamada a la API correspondiente para evitar cargas innecesarias.
+     */
     const initData = async () => {
         await Promise.all([
             places.value.length === 0 ? getPlaces() : null,
@@ -410,10 +492,10 @@ export const useSplitUpStore = defineStore('split-up', () => {
     };
 
     /**
-     * 
+     * Actualiza los detalles de una relación factura-miembro específica, como el estado de pago y el monto correspondiente.
      * @param billMemberId El ID de la relación factura-miembro que se desea actualizar.
      */
-    function updateBillItem(billItem: BillItemDTO) {
+    function updateBillItem(billItem: BillMemberDetailsDTO) {
 
         const billMember = billMembers.value.find(
             b => b.id === billItem.id
@@ -427,6 +509,17 @@ export const useSplitUpStore = defineStore('split-up', () => {
         updateBillMember(billMember);
     }
 
+    /**
+     * Permite marcar como pagadas todas las facturas asociadas a un miembro específico.
+     * @param memberId El ID del miembro para el cual se desean marcar todas las facturas como pagadas.
+     */
+    function payAllBillMemberItems(memberBillItems: BillMemberDetailsDTO[]) {
+        for (const billItem of memberBillItems) {
+            billItem.isPaid = true;
+            updateBillItem(billItem);
+        }
+    }
+
     // ***BillItem***
 
     /**
@@ -436,13 +529,13 @@ export const useSplitUpStore = defineStore('split-up', () => {
      * @param toDate Fecha de fin del rango.
      * @returns Lista de facturas asociadas al miembro dentro del rango de fechas. Si no hay facturas, devuelve una lista vacía.
      */
-    function getMemberBillItemsBetweenDates(memberId: number, fromDate: Date, toDate: Date) : BillItemDTO[] {
+    function getMemberBillItemsBetweenDates(memberId: number, fromDate: Date, toDate: Date) : BillMemberDetailsDTO[] {
     
         const billMembersFiltered = billMembers.value.filter(
             bm => bm.memberId === memberId
         );
         
-        const billItems: BillItemDTO[] = [];
+        const billItems: BillMemberDetailsDTO[] = [];
 
         const billsMap = new Map(
             bills.value.map(b => [b.id, b])
@@ -561,6 +654,8 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
     return {
         //---properties---
+        fromDate,
+        toDate,
         members,
         places,
         bills,
@@ -584,6 +679,9 @@ export const useSplitUpStore = defineStore('split-up', () => {
         addBill,
         updateBill,
         deleteBill,
+        getBillsBetweenDates,
+        getBillSumary,
+        isBillPaid,
 
         //billMembers
         getBillMembers,
@@ -596,6 +694,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         getMemberBillItemsBetweenDates,
         getMemberBillSummary,
         splitBillAmountsEquallyBetweenMembers,
+        payAllBillMemberItems,
 
         //init
         initData,
