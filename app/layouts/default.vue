@@ -31,7 +31,7 @@
 
           <SidebarMenuItem>
             <SidebarMenuButton as-child>
-              <NuxtLink to="/bills">
+              <NuxtLink to="/billMembers">
                 <span class="ml-2">Dividir Facturas</span>
               </NuxtLink>
             </SidebarMenuButton>

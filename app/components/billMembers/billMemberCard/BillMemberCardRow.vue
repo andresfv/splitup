@@ -1,0 +1,100 @@
+<template>
+
+    <div class="grid grid-cols-5 text-center">
+
+        <div>
+            {{ props.billItem.placeName }}
+        </div>
+
+        <div>
+            {{ myFormatDate(props.billItem.date) }}
+        </div>
+
+        <div>
+            <span v-if="!editMode">{{ myFormatCurrency(props.billItem.amount) }}</span>
+            <MoneyInput v-else v-model="billItemAmount" 
+                        ref="moneyInputRef"
+                        :placeholder="'Ingrese el monto de la factura'" 
+                         class="w-20 ml-1"/>
+        </div>
+
+        <div v-if="!editMode">
+            <span v-if="props.billItem.isPaid" class="text-green-500">
+                ✓
+            </span>
+
+            <span v-if="!props.billItem.isPaid" class="text-red-500">
+                X
+            </span>
+        </div>
+
+        <div v-else>
+            <input type="checkbox" v-model="billItemIsPaid" class="ml-2" />
+        </div>
+
+        <div>
+            <Button v-if="!editMode" class="cursor-pointer hover:scale-110 transition" 
+                :size="'sm'" @click="enableEditMode">
+                <EditIcon />
+            </Button>
+
+            <Button v-if="editMode" class="cursor-pointer hover:scale-110 transition mb-1"
+            :size="'sm'" @click="updateBillItem()">
+                <CheckIcon /> 
+            </Button>
+
+            <Button v-if="editMode" class="cursor-pointer hover:scale-110 transition"
+            :size="'sm'" @click="editMode = false">
+                <CancelIcon /> 
+            </Button>
+        </div>
+
+    </div>
+
+</template>
+
+<script setup lang="ts">
+import CancelIcon from '~/components/icons/CancelIcon.vue';
+import CheckIcon from '~/components/icons/CheckIcon.vue';
+import EditIcon from '~/components/icons/EditIcon.vue';
+import MoneyInput from '~/components/common/moneyInput/MoneyInput.vue';
+
+interface Props {
+    billItem: BillItemDTO;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+    updateBillItem: [billItem: BillItemDTO];
+}>();
+
+const moneyInputRef = ref<InstanceType<typeof MoneyInput> | null>(null);
+
+function enableEditMode() {
+    billItemAmount.value = props.billItem.amount;
+
+    editMode.value = true;
+    nextTick(() => {
+        moneyInputRef.value?.$el?.focus();
+    });
+}
+
+function updateBillItem() {
+    const updatedBillItem: BillItemDTO = {
+        ...props.billItem,
+        amount: billItemAmount.value,
+        isPaid: billItemIsPaid.value
+    };
+
+    editMode.value = false;
+
+    emit('updateBillItem', updatedBillItem);
+}
+
+const editMode = ref(false);
+
+const billItemAmount = ref(props.billItem.amount)
+const billItemIsPaid = ref(props.billItem.isPaid)
+
+</script>

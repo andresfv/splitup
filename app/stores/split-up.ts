@@ -1,5 +1,6 @@
-import type { NuxtError } from '#app';
 import { toast } from 'vue-sonner';
+
+//TODO: Mejorar validaciones del lado del servidor, deforma que devuelva errores más especificos con status 400
 
 export const useSplitUpStore = defineStore('split-up', () => {
     // ***MEMBERS***
@@ -40,7 +41,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
             members.value.push(newMember);
             toast.success('Miembro agregado correctamente');
 
-        } catch (e){
+        } catch (e) {
             console.error("Error al guardar miembro", e);
             toast.error('Error al agregar miembro');
         };
@@ -83,12 +84,15 @@ export const useSplitUpStore = defineStore('split-up', () => {
             const index = members.value.findIndex(m => m.id === member.id);
 
             if (index !== -1) {
-                members.value[index] = member;
+                // members.value[index] = member;
+                members.value = members.value.map(m =>
+                    m.id === member.id ? member : m
+                );
             }
 
             toast.success('Miembro actualizado correctamente');
 
-        } catch(e) {
+        } catch (e) {
             console.error("Error al actualizar miembro", e);
             toast.error('Error al actualizar miembro');
         }
@@ -110,14 +114,14 @@ export const useSplitUpStore = defineStore('split-up', () => {
             members.value = members.value.filter(m => m.id !== member.id);
 
             toast.success('Miembro eliminado correctamente');
-        } catch(e) {
-            showError(e as NuxtError);
+        } catch (e) {
+            handleFetchError(e);
         };
     };
 
 
     // ***PLACES***
-     const places = ref<Place[]>([]);
+    const places = ref<Place[]>([]);
 
     const getPlaces = async () => {
         places.value = await $fetch<Place[]>('/api/places');
@@ -125,7 +129,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
     const addPlace = async (place?: Place) => {
         try {
-           
+
             // Validar nombre
             const placeName = place?.name?.trim() || 'Nuevo comercio';
             if (placeName.length < 1) {
@@ -157,9 +161,9 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
             return newPlace;
 
-        } catch(e) {
+        } catch (e) {
             console.error("Error al guardar comercio", e);
-            showError(e as NuxtError);
+            handleFetchError(e);
         };
     };
 
@@ -199,12 +203,15 @@ export const useSplitUpStore = defineStore('split-up', () => {
             const index = places.value.findIndex(p => p.id === place.id)
 
             if (index !== -1) {
-                places.value[index] = updatedPlace;
+                // places.value[index] = updatedPlace;
+                places.value = places.value.map(p =>
+                    p.id === updatedPlace.id ? updatedPlace : p
+                );
             }
 
             toast.success('Comercio actualizado correctamente');
-        } catch(e) {
-            showError(e as NuxtError);
+        } catch (e) {
+            handleFetchError(e);
         }
     };
 
@@ -223,30 +230,29 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
             places.value = places.value.filter(p => p.id !== place.id);
             toast.success('Comercio eliminado correctamente');
-        } catch(e) {
-            showError(e as NuxtError);
+        } catch (e) {
+            handleFetchError(e);
         };
     };
 
-        // ***BILLS***
-     const bills = ref<Bill[]>([]);
+    // ***BILLS***
+    const bills = ref<Bill[]>([]);
 
-     const getBills = async () => {
+    const getBills = async () => {
         bills.value = await $fetch<Bill[]>('/api/bills');
-        
+
     };
 
     const addBill = async (bill: Bill) => {
-          try {
-              if (!bill == null) return; 
-           console.log("Guardando factura", bill);
+        try {
+            if (!bill == null) return;
             const newBill: Bill = await $fetch<Bill>('/api/bills', {
                 method: 'POST',
-                body: { placeId: bill.placeId,
+                body: {
+                    placeId: bill.placeId,
                     date: bill.date,
                     amount: bill.amount,
-                    isPaid: bill.isPaid ?? false,
-                 }
+                }
             })
 
             bills.value.push(newBill);
@@ -254,13 +260,13 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
             return newBill;
 
-        } catch(e) {
+        } catch (e) {
             console.error("Error al guardar factura", e);
-            showError(e as NuxtError);
+            handleFetchError(e);
         };
     };
 
-        const updateBill = async (bill: Bill) => {
+    const updateBill = async (bill: Bill) => {
         try {
             // Validar que la factura existe
             if (!bill.id) {
@@ -278,25 +284,26 @@ export const useSplitUpStore = defineStore('split-up', () => {
                 method: 'PUT',
                 body: {
                     placeId: bill.placeId,
-                    date: bill.date,
+                    date: new Date (bill.date),
                     amount: bill.amount,
-                    isPaid: bill.isPaid ?? false,
                 }
             });
 
             const index = bills.value.findIndex(p => p.id === bill.id)
 
             if (index !== -1) {
-                bills.value[index] = updatedBill;
+                bills.value = bills.value.map(b =>
+                    b.id === updatedBill.id ? updatedBill : b
+                );
             }
 
             toast.success('Factura actualizada correctamente');
-        } catch(e) {
-            showError(e as NuxtError);
+        } catch (e) {
+            handleFetchError(e);
         }
     };
 
-        const deleteBill = async (bill: Bill) => {
+    const deleteBill = async (bill: Bill) => {
         try {
 
             // Validar que la factura existe
@@ -305,22 +312,259 @@ export const useSplitUpStore = defineStore('split-up', () => {
                 return;
             }
 
+            //Busca miembros asociados a la factura y los elimina de ella antes de eliminarla
+            const billMembersToDelete = getBillMembersByBillId(bill.id);
+            for (const bm of billMembersToDelete) {
+                await deleteBillMember(bm);
+            }
+
             await $fetch<string>(`/api/bills/${bill.id}`, {
                 method: 'DELETE',
             });
 
             bills.value = bills.value.filter(p => p.id !== bill.id);
             toast.success('Factura eliminada correctamente');
-        } catch(e) {
-            showError(e as NuxtError);
+        } catch (e) {
+            handleFetchError(e);
         };
     };
+
+    // ***BILL_MEMBERS***
+    const billMembers = ref<BillMember[]>([]);
+
+    const getBillMembers = async () => {
+        billMembers.value = await $fetch<BillMember[]>('/api/bills-members');
+    };
+
+    const getBillMembersByBillId = (billId: number) => {
+        return billMembers.value.filter(bm => bm.billId === billId);
+    }
+
+    const addBillMember = async (billMember: BillMember) => {
+        try {
+            if (!billMember == null) return;
+            const newBillMember: BillMember = await $fetch<BillMember>('/api/bills-members', {
+                method: 'POST',
+                body: {
+                    billId: billMember.billId,
+                    memberId: billMember.memberId,
+                    amount: billMember.amount,
+                    isPaid: billMember.isPaid ?? false,
+                }
+            })
+
+            billMembers.value.push(newBillMember);
+
+            return newBillMember;
+
+        } catch (e) {
+            console.error("Error al guardar factura persona", e);
+            handleFetchError(e);
+        };
+    };
+
+    const updateBillMember = async (billMember: BillMember) => {
+        try {
+            const updatedBill = await $fetch<BillMember>(`/api/bills-members/${billMember.id}`, {
+                method: 'PUT',
+                body: {
+                    billId: billMember.billId,
+                    memberId: billMember.memberId,
+                    amount: billMember.amount,
+                    isPaid: billMember.isPaid ?? false,
+                }
+            });
+
+            const index = billMembers.value.findIndex(p => p.id === billMember.id)
+
+            if (index !== -1) {
+                // billMembers.value[index] = updatedBill;
+                billMembers.value = billMembers.value.map(b =>
+                    b.id === updatedBill.id ? updatedBill : b
+                );
+            }
+        } catch (e) {
+            handleFetchError(e);
+        }
+    };
+
+    const deleteBillMember = async (billMember: BillMember) => {
+        try {
+            await $fetch<string>(`/api/bills-members/${billMember.id}`, {
+                method: 'DELETE',
+            });
+
+            billMembers.value = billMembers.value.filter(p => p.id !== billMember.id);
+        } catch (e) {
+            handleFetchError(e);
+        };
+    };
+
+    const initData = async () => {
+        await Promise.all([
+            places.value.length === 0 ? getPlaces() : null,
+            members.value.length === 0 ? getMembers() : null,
+            bills.value.length === 0 ? getBills() : null,
+            billMembers.value.length === 0 ? getBillMembers() : null
+        ]);
+    };
+
+    /**
+     * 
+     * @param billMemberId El ID de la relación factura-miembro que se desea actualizar.
+     */
+    function updateBillItem(billItem: BillItemDTO) {
+
+        const billMember = billMembers.value.find(
+            b => b.id === billItem.id
+        );
+
+        if (!billMember) return;
+
+        billMember.isPaid = billItem.isPaid;
+        billMember.amount = billItem.amount;
+
+        updateBillMember(billMember);
+    }
+
+    // ***BillItem***
+
+    /**
+     * Obtiene una lista de facturas asociadas a un miembro específico dentro de un rango de fechas determinado.
+     * @param memberId El ID del miembro para el cual se desean obtener las facturas.
+     * @param fromDate Fecha de inicio del rango.
+     * @param toDate Fecha de fin del rango.
+     * @returns Lista de facturas asociadas al miembro dentro del rango de fechas. Si no hay facturas, devuelve una lista vacía.
+     */
+    function getMemberBillItemsBetweenDates(memberId: number, fromDate: Date, toDate: Date) : BillItemDTO[] {
+    
+        const billMembersFiltered = billMembers.value.filter(
+            bm => bm.memberId === memberId
+        );
+        
+        const billItems: BillItemDTO[] = [];
+
+        const billsMap = new Map(
+            bills.value.map(b => [b.id, b])
+        );
+
+        const placesMap = new Map(
+            places.value.map(p => [p.id, p])
+        );
+
+        // Normalizar fechas para comparar solo día/mes/año (sin hora)
+        const fromDateNormalized = normalizeDate(fromDate);
+        const toDateNormalized = normalizeDate(toDate);
+        
+        for (const billMember of billMembersFiltered) {
+            
+            const bill = billsMap.get(billMember.billId);
+            
+            if (bill == null) {
+                console.warn("Factura no encontrada para el miembro:", memberId, "Factura ID:", billMember.billId);
+                continue;
+            }
+            
+            // Normalizar la fecha de la factura para comparar solo la parte de fecha
+            const billDateNormalized = normalizeDate(bill.date);
+            
+            // Si la fecha de la factura está fuera del rango, saltar a la siguiente iteración
+            if(billDateNormalized < fromDateNormalized || billDateNormalized > toDateNormalized){
+                continue;
+            }
+            
+            const place = placesMap.get(bill.placeId);
+
+            if (place == null) {
+                console.warn("Lugar no encontrado para la factura:", bill.id, "Lugar ID:", bill.placeId);
+                continue;
+            }
+
+            billItems.push({
+                id: billMember.id,
+                placeName: place.name,
+                date: new Date (bill.date),
+                amount: billMember.amount,
+                isPaid: billMember.isPaid,
+            });
+        }
+
+        return billItems;
+    }
+
+    /**
+     * Calcula el monto total de las facturas de un miembro dentro de un rango de fechas.
+     * @param memberId El ID del miembro para el cual se desea calcular el monto.
+     * @param fromDate Fecha de inicio del rango.
+     * @param toDate Fecha de fin del rango.
+     * @returns Monto total de las facturas del miembro dentro del rango de fechas.
+     */
+    function getMemberBillSummary(memberId: number, fromDate: Date, toDate: Date): BillSummaryDTO {
+        const billItems = getMemberBillItemsBetweenDates(memberId, fromDate, toDate);
+
+        let total = 0;
+        let paid = 0;
+        let pending = 0;
+
+        for (const item of billItems) {
+
+            total += item.amount;
+
+            if (item.isPaid) {
+                paid += item.amount;
+            } else {
+                pending += item.amount;
+            }
+        }
+
+        return {
+            total,
+            paid,
+            pending,
+            count: billItems.length
+        };
+    }
+    
+    /**
+     * Calcula el monto que le corresponde pagar a cada miembro de forma equitativa para todas las facturas dentro de un rango de fechas determinado.
+     * @param fromDate Fecha de inicio del rango.
+     * @param toDate Fecha de fin del rango.
+     */
+    function splitBillAmountsEquallyBetweenMembers(fromDate: Date, toDate: Date) {
+        if(!fromDate || !toDate){
+            console.warn("Rango de fechas no válido");
+            return;
+        }
+
+        // Normalizar fechas para comparar solo día/mes/año (sin hora)
+        const fromDateNormalized = normalizeDate(fromDate);
+        const toDateNormalized = normalizeDate(toDate);
+        
+        const billsInRange = bills.value.filter(b => {
+            const billDateNormalized = normalizeDate(b.date);
+            return billDateNormalized >= fromDateNormalized && billDateNormalized <= toDateNormalized;
+        });
+        
+        for(const bill of billsInRange){
+            const billMemberByBill = billMembers.value.filter(bm => bm.billId === bill.id);
+            const membersCount = billMemberByBill.length;
+
+            if (membersCount === 0) { continue; }
+            
+            const amountPerMember =  bill.amount / membersCount;
+            for(const billMember of billMemberByBill){
+                billMember.amount = amountPerMember;
+                updateBillMember(billMember);
+            }
+        }
+    }
 
     return {
         //---properties---
         members,
         places,
         bills,
+        billMembers,
 
         //---actions---
         //members
@@ -340,5 +584,20 @@ export const useSplitUpStore = defineStore('split-up', () => {
         addBill,
         updateBill,
         deleteBill,
+
+        //billMembers
+        getBillMembers,
+        addBillMember,
+        updateBillMember,
+        deleteBillMember,
+        updateBillItem,
+
+        //billItems
+        getMemberBillItemsBetweenDates,
+        getMemberBillSummary,
+        splitBillAmountsEquallyBetweenMembers,
+
+        //init
+        initData,
     };
 },);

@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     const db = await getDb();
 
     await db.run(
-      'UPDATE places SET name = ? WHERE id = ?',
+      'UPDATE place SET name = ? WHERE id = ?',
       body.name, id
     );
 
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
      };
 
   } catch (error) {
-    console.error('Error al actualizar el place:', error);
+    console.error('Error al actualizar el comercio:', error);
     throw createError('Error interno del servidor');
   }
 });

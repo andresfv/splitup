@@ -7,7 +7,7 @@ export default defineEventHandler(async () => {
     try {
         
     const db = await getDb();
-    const members = await db.all('SELECT * FROM members');
+    const members = await db.all('SELECT * FROM member');
     
     return members.map(member => ({
         id: member.id,

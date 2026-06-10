@@ -25,8 +25,8 @@ const modalOpen = ref(false);
 
 const places = computed(() => splitUpStore.places);
 
-onMounted(() => {
-    splitUpStore.getPlaces();
+await useAsyncData('init-split-data', async () => {
+    await splitUpStore.initData();
 });
 
 </script>

@@ -16,5 +16,8 @@ export default defineNuxtConfig({
     prefix: '',
     componentDir: '~/components/ui',
   },
+  runtimeConfig: {
+    dbPath: process.env.DB_PATH
+  },
 
 })

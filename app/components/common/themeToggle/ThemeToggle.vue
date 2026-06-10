@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Sun, Moon } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
+import { Sun, Moon } from '@lucide/vue';
 
 const { theme, toggle } = useTheme()
 </script>

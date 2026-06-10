@@ -30,7 +30,7 @@ declare global {
         id: number;
         placeId: number;
         amount: number;
-        isPaid: boolean;
+        // isPaid: boolean;
         date: Date;
     }
 
@@ -38,8 +38,32 @@ declare global {
      * Representa la relación entre una compra y un miembro, incluyendo la cantidad que le corresponde pagar al miembro.
      */
     interface BillMember {
+        id: number;
         billId: number;
         memberId: number;
-        shareAmount: number;
+        amount: number;
+        isPaid: boolean;
+    }
+
+    /**
+     * Representa un ítem de factura que se muestra en la UI, incluyendo el nombre del lugar, la fecha, el monto y si está pagado o no.
+     */
+    interface BillItemDTO {
+        id: number;
+        placeName: string;
+        date: Date;
+        amount: number;
+        isPaid: boolean;
+    }
+
+    /**
+     * Representa un resumen de las facturas, incluyendo el total, lo pagado, lo pendiente y la cantidad de facturas.
+     * No BD, solo para mostrar en la UI.
+     */
+    interface BillSummaryDTO {
+        total: number;
+        paid: number;
+        pending: number;
+        count: number;
     }
 }

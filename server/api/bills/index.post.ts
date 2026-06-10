@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const db = await getDb();
 
     const result = await db.run(
-      'INSERT INTO bills (place, amount, is_paid, date) VALUES (?, ?, ?, ?)',
+      'INSERT INTO bill (place, amount, is_paid, date) VALUES (?, ?, ?, ?)',
       [body.placeId, body.amount, body.isPaid ? 1 : 0, body.date]
     )
 

@@ -6,7 +6,7 @@ import { getDb } from '../../utils/db';
 export default defineEventHandler(async () => {
     try {
     const db = await getDb();
-    const places = await db.all('SELECT * FROM places');
+    const places = await db.all('SELECT * FROM place');
     
     return places.map(place => ({
         id: place.id,
@@ -14,7 +14,7 @@ export default defineEventHandler(async () => {
     }));
 
     } catch (error) {
-    console.error('Error al obtener los places:', error);
+    console.error('Error al obtener los comercios:', error);
     throw createError('Error interno del servidor');
   }
 });
