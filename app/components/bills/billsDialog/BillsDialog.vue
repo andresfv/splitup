@@ -47,10 +47,10 @@
                 
                 <DialogFooter class="mt-6">
                     <Button type="button" variant="outline" @click="handleClose">
-                        Cancelar
+                        Cerrar
                     </Button>
                     <Button type="submit">
-                        Aceptar
+                        Guardar
                     </Button>
                 </DialogFooter>
             </form>
@@ -130,7 +130,10 @@ const handleSubmit = async () => {
         
         splitUpStore.getBills();
 
-        handleClose();
+        //Limpia los campos del formulario después de guardar excepto el de fecha
+        billPlace.value = {} as Place;
+        billAmount.value = 0;
+        members.value = [];
 
     } catch (error) {
         console.error('Error agregando nuevo participante:', error);
