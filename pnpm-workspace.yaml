@@ -1,3 +1,10 @@
+allowBuilds:
+  '@parcel/watcher': true
+  better-sqlite3: true
+  esbuild: true
+  sqlite3: true
+  vue-demi: true
+
 ignoredBuiltDependencies:
   - better-sqlite3
 

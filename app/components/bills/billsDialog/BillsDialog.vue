@@ -108,7 +108,7 @@ const handleSubmit = async () => {
     try {
         let bill = props.selectedBill as Bill | undefined;
 
-        billAmount.value = roundNumber(billAmount.value, 0);
+        billAmount.value = roundNumber(billAmount.value, { decimals: 0 });
 
         if (!bill?.id) {
            bill = await splitUpStore.addBill({
@@ -175,7 +175,7 @@ const addMemberToBill = async (selectedMembers: Member[], bill: Bill | undefined
             {
                 billId: bill.id,
                 memberId: newBillMember.id,
-                amount: roundNumber(bill.amount / selectedMembers.length, 0), //Distribuye el monto de la factura entre los miembros seleccionados
+                amount: roundNumber(bill.amount / selectedMembers.length, { decimals: 0 }), //Distribuye el monto de la factura entre los miembros seleccionados
             } as BillMember
         );
     }

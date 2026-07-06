@@ -23,7 +23,7 @@
             </div>
         </div>
 
-      <div v-if="montoPendiente > 0">
+      <div v-if="montoPendiente > 0 && !isExporting">
             <Button class="w-full mt-4" 
                 :size="'sm'" 
                 title="Marcar todo como pagado" 
@@ -32,14 +32,26 @@
             </Button>
         </div>
 
+        <div v-if="!isExporting">
+            <Button class="w-full mt-4" 
+                :size="'sm'" 
+                title="Exportar" 
+                @click="$emit('exportPng')">
+                Exportar
+            </Button>
+        </div>
+
     </div>
 
 </template>
 
 <script setup>
+
 defineProps({
     montoTotal: Number,
     montoPagado: Number,
-    montoPendiente: Number
+    montoPendiente: Number,
+    isExporting: Boolean
 })
+
 </script>

@@ -1,18 +1,19 @@
 <template>
     <div class="space-y-2">
 
-        <div class="grid grid-cols-5 font-bold text-center">
+        <div :class="['font-bold text-center grid', isExporting ? 'grid-cols-3' : 'grid-cols-5']">
             <div>Nombre</div>
             <div>Fecha</div>
             <div>Monto</div>
-            <div>Pagado</div>
-            <div>Acciones</div>
+            <div v-if="!isExporting">Pagado</div>
+            <div v-if="!isExporting">Acciones</div>
         </div>
 
         <BillMemberCardRow
             v-for="item in billItems"
             :key="item.id"
             :billItem="item"
+            :isExporting
             @updateBillItem="updateBillItem"
         />
 
@@ -25,6 +26,7 @@ import BillMemberCardRow from './BillMemberCardRow.vue';
 
 interface Props {
     billItems: Array<BillMemberDetailsDTO>;
+    isExporting: boolean;
 }
 
 const props = defineProps<Props>();

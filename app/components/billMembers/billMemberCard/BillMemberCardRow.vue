@@ -1,6 +1,6 @@
 <template>
 
-    <div class="grid grid-cols-5 text-center">
+    <div :class="['text-center grid', isExporting ? 'grid-cols-3' : 'grid-cols-5']">
 
         <div class="min-w-0 wrap-break-words">
             {{ props.billItem.placeName }}
@@ -18,21 +18,23 @@
                          class="w-20 ml-1"/>
         </div>
 
-        <div v-if="!editMode">
-            <span v-if="props.billItem.isPaid" class="text-green-500">
-                ✓
-            </span>
+        <div v-if="!isExporting">
+            <div v-if="!editMode">
+                <span v-if="props.billItem.isPaid" class="text-green-500">
+                    ✓
+                </span>
 
-            <span v-if="!props.billItem.isPaid" class="text-red-500">
-                X
-            </span>
+                <span v-if="!props.billItem.isPaid" class="text-red-500">
+                    X
+                </span>
+            </div>
+
+            <div v-else>
+                <input type="checkbox" v-model="billItemIsPaid" class="ml-2" />
+            </div>
         </div>
-
-        <div v-else>
-            <input type="checkbox" v-model="billItemIsPaid" class="ml-2" />
-        </div>
-
-        <div>
+        
+        <div v-if="!isExporting">
             <Button v-if="!editMode" class="cursor-pointer hover:scale-110 transition" 
                 :size="'sm'" @click="enableEditMode">
                 <EditIcon />
@@ -61,6 +63,7 @@ import MoneyInput from '~/components/common/moneyInput/MoneyInput.vue';
 
 interface Props {
     billItem: BillMemberDetailsDTO;
+    isExporting: boolean;
 }
 
 const props = defineProps<Props>();
@@ -82,7 +85,7 @@ function enableEditMode() {
 
 function updateBillItem() {
 
-    const roundedAmount = roundNumber(billItemAmount.value, 0);
+    const roundedAmount = roundNumber(billItemAmount.value, { decimals: 0 });
 
     const updatedBillItem: BillMemberDetailsDTO = {
         ...props.billItem,
