@@ -54,6 +54,7 @@ declare global {
         date: Date;
         amount: number;
         isPaid: boolean;
+        isSelected: boolean;
     }
 
 

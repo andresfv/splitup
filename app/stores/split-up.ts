@@ -360,6 +360,11 @@ export const useSplitUpStore = defineStore('split-up', () => {
         return filteredBills
     }
 
+    /**
+     * Obtiene un resumen de una factura específica, incluyendo el total, lo pagado, lo pendiente, la cantidad de miembros asociados y el total de los seleccionados.
+     * @param billId El ID de la factura para la cual se desea obtener el resumen.
+     * @returns Un objeto BillSummaryDTO con los detalles del resumen de la factura. Si la factura no existe, devuelve un resumen con valores en cero.
+     */
     const getBillSumary = (billId: number): BillSummaryDTO => {
         const bill = bills.value.find(b => b.id === billId);
         if (!bill) {
@@ -393,6 +398,8 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
     // ***BILL_MEMBERS***
     const billMembers = ref<BillMember[]>([]);
+
+    const billMembersSelected = ref<BillMember[]>([]);
 
     const getBillMembers = async () => {
         billMembers.value = await $fetch<BillMember[]>('/api/bills-members');
@@ -497,7 +504,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
      */
     function updateBillItem(billItem: BillMemberDetailsDTO) {
 
-        const billMember = billMembers.value.find(
+        const billMember: BillMember|undefined = billMembers.value.find(
             b => b.id === billItem.id
         );
 
@@ -579,6 +586,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
                 date: new Date (bill.date),
                 amount: billMember.amount,
                 isPaid: billMember.isPaid,
+                isSelected: false
             });
         }
 
@@ -652,6 +660,15 @@ export const useSplitUpStore = defineStore('split-up', () => {
         }
     }
 
+    function addBillMemberToSelected(billMemberDto: BillMemberDetailsDTO) {
+        const billMemberItem = billMembers.value.find(bm => bm.id === billMemberDto.id);
+        if (billMemberDto.isSelected) {
+            billMembersSelected.value.push(billMemberItem as BillMember);
+        }else{
+            billMembersSelected.value = billMembersSelected.value.filter(bm => bm.id !== billMemberDto.id);
+        }
+    }
+
     return {
         //---properties---
         fromDate,
@@ -660,6 +677,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         places,
         bills,
         billMembers,
+        billMembersSelected,
 
         //---actions---
         //members
@@ -689,6 +707,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         updateBillMember,
         deleteBillMember,
         updateBillItem,
+        addBillMemberToSelected,
 
         //billItems
         getMemberBillItemsBetweenDates,

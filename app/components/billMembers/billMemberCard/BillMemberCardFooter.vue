@@ -9,6 +9,14 @@
             </div>
         </div>
 
+        <div v-if="montoSeleccionados > 0" 
+            class="grid grid-cols-2 font-bold text-blue-600 dark:text-blue-400">
+            <div>Monto items seleccionados:</div>
+            <div class="text-right">
+                {{ myFormatCurrency(montoSeleccionados) }}
+            </div>
+        </div>
+
         <div class="grid grid-cols-2 font-bold text-base">
             <div>Monto Pagado:</div>
             <div class="text-right">
@@ -49,6 +57,7 @@
 
 defineProps({
     montoTotal: Number,
+    montoSeleccionados: Number,
     montoPagado: Number,
     montoPendiente: Number,
     isExporting: Boolean

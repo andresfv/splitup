@@ -1,6 +1,6 @@
 <template>
 
-    <div :class="['text-center grid', isExporting ? 'grid-cols-3' : 'grid-cols-5']">
+    <div :class="containerClass" @click="selectItem">
 
         <div class="min-w-0 wrap-break-words">
             {{ props.billItem.placeName }}
@@ -67,9 +67,20 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const isBillItemSelected = ref<boolean>(false);
+
+const containerClass = computed(() => [
+  'grid',
+  'text-center',
+  'cursor-pointer',
+  props.isExporting ? 'grid-cols-3' : 'grid-cols-5',
+  isBillItemSelected.value ? 'font-bold text-blue-600 dark:text-blue-400' 
+                            : 'hover:font-semibold hover:text-blue-600 dark:hover:text-blue-400',
+]);
 
 const emit = defineEmits<{
     updateBillItem: [billItem: BillMemberDetailsDTO];
+    selectItem: [billItem: BillMemberDetailsDTO];
 }>();
 
 const moneyInputRef = ref<InstanceType<typeof MoneyInput> | null>(null);
@@ -96,6 +107,18 @@ function updateBillItem() {
     editMode.value = false;
 
     emit('updateBillItem', updatedBillItem);
+}
+
+function selectItem() {
+    isBillItemSelected.value = !isBillItemSelected.value;
+
+    //Solo actualiza la propiedad isSelected del billItem, el resto de las propiedades permanecen igual
+    const selectedBillItem: BillMemberDetailsDTO = {
+        ...props.billItem,
+        isSelected: isBillItemSelected.value,
+    };
+
+    emit('selectItem', selectedBillItem);
 }
 
 const editMode = ref(false);

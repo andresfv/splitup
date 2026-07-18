@@ -15,6 +15,7 @@
             :billItem="item"
             :isExporting
             @updateBillItem="updateBillItem"
+            @selectItem="selectBillItem"
         />
 
     </div>
@@ -35,6 +36,10 @@ const splitUpStore = useSplitUpStore();
 
 function updateBillItem(billItem: BillMemberDetailsDTO) {
     splitUpStore.updateBillItem(billItem);
+}
+
+function selectBillItem(billItem: BillMemberDetailsDTO) {
+    splitUpStore.addBillMemberToSelected(billItem);
 }
 
 </script>

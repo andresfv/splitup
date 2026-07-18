@@ -165,7 +165,7 @@ const addMemberToBill = async (selectedMembers: Member[], bill: Bill | undefined
     
     const dbSelectedMembers = localBillMembers.value
         .filter(bm => bm.billId === bill.id);
-
+// FIXME: Primero se deben eliminar todas las billMembers actuales y luego agregar los nuevos, para evitar problemas de concurrencia.
     const currentIds = new Set(dbSelectedMembers.map(bm => bm.memberId)); //Mapea el ID de miembros actualmente asociados a la factura en la base de datos
     const newIds = new Set(selectedMembers.map(m => m.id)); //Mapea el ID de miembros seleccionados actualmente en la interfaz
     const toAdd = selectedMembers.filter(m => !currentIds.has(m.id)); //Crea una lista de miembros seleccionados que no están en la base de datos

@@ -9,7 +9,10 @@
 
         <div class="border-t border-dashed border-accent-foreground my-4"></div>
 
-        <BillMemberCardFooter :montoTotal="billSummary.total" :montoPagado="billSummary.paid" :montoPendiente="billSummary.pending" :isExporting="isExporting"
+        <BillMemberCardFooter :montoTotal="billSummary.total" 
+            :montoPagado="billSummary.paid" :montoPendiente="billSummary.pending" 
+            :isExporting="isExporting"
+            :montoSeleccionados="billMembersSelectedAmount"
             @markAsPaid="handleMarkAsPaid" @exportPng="handleExportPng"/>
 
     </div>
@@ -56,6 +59,16 @@ const handleExportPng = async () => {
 
 const billSummary = computed<BillSummaryDTO>(() => {
     return splitUpStore.getMemberBillSummary(props.member.id, props.fromDate, props.toDate);
+});
+
+const billMembersSelectedAmount = computed<number>(() => {
+    let billMembersSelectedAmount = 0;
+    const billMembersSelected = splitUpStore.billMembersSelected.filter(billItem => billItem.memberId === props.member.id);
+   
+    for (const billItem of billMembersSelected) {
+            billMembersSelectedAmount += billItem.amount;
+    }
+    return billMembersSelectedAmount;
 });
 
 </script>
