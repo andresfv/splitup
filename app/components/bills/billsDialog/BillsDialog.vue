@@ -62,8 +62,8 @@
 import { toast } from 'vue-sonner';
 import DatePicker from '~/components/common/datePicker/DatePicker.vue';
 import MoneyInput from '~/components/common/moneyInput/MoneyInput.vue';
-import PlaceAutoComplete from '../placeAutoComplete/PlaceAutoComplete.vue';
 import MembersMultiSelect from '~/components/members/membersMultiSelect/MembersMultiSelect.vue';
+import PlaceAutoComplete from '../placeAutoComplete/PlaceAutoComplete.vue';
 
 
 interface Props {
@@ -106,11 +106,12 @@ const handleSubmit = async () => {
     }
 
     try {
-        let bill = props.selectedBill as Bill | undefined;
+        let bill = props.selectedBill;
+        const isNewBill = bill == null;
 
         billAmount.value = roundNumber(billAmount.value, { decimals: 0 });
 
-        if (!bill?.id) {
+        if (bill == null) {
            bill = await splitUpStore.addBill({
                 placeId: billPlace.value.id,
                 date: billDate.value,
@@ -130,10 +131,14 @@ const handleSubmit = async () => {
         
         splitUpStore.getBills();
 
-        //Limpia los campos del formulario después de guardar excepto el de fecha
-        billPlace.value = {} as Place;
-        billAmount.value = 0;
-        members.value = [];
+        if(isNewBill){
+            //Limpia los campos del formulario después de guardar excepto el de fecha
+            billPlace.value = {} as Place;
+            billAmount.value = 0;
+            members.value = [];
+        }else {
+            handleClose();
+        }
 
     } catch (error) {
         console.error('Error agregando nuevo participante:', error);
@@ -163,17 +168,17 @@ const addMemberToBill = async (selectedMembers: Member[], bill: Bill | undefined
 
     if(!selectedMembers || !bill) return;
     
-    const dbSelectedMembers = localBillMembers.value
-        .filter(bm => bm.billId === bill.id);
-// FIXME: Primero se deben eliminar todas las billMembers actuales y luego agregar los nuevos, para evitar problemas de concurrencia.
-    const currentIds = new Set(dbSelectedMembers.map(bm => bm.memberId)); //Mapea el ID de miembros actualmente asociados a la factura en la base de datos
-    const newIds = new Set(selectedMembers.map(m => m.id)); //Mapea el ID de miembros seleccionados actualmente en la interfaz
-    const toAdd = selectedMembers.filter(m => !currentIds.has(m.id)); //Crea una lista de miembros seleccionados que no están en la base de datos
-    const toRemove = dbSelectedMembers.filter(bm => !newIds.has(bm.memberId)); //Crea una lista de miembros en la base de datos que no están seleccionados
+    const dbSelectedMembers = localBillMembers.value.filter(bm => bm.billId === bill.id);
+        
+    if (selectedMembers.length === 0 && dbSelectedMembers.length === 0) return;
 
-    if (toAdd.length === 0 && toRemove.length === 0) return;
+    //Primero eliminamos todos los miembros de la factura en DB
+    for (const deletedBillMember of dbSelectedMembers) {
+        await splitUpStore.deleteBillMember(deletedBillMember);
+    }
 
-    for (const newBillMember of toAdd) {
+    //Luego agregamos todos los miembros seleccionados en interfaz a la factura en DB
+    for (const newBillMember of selectedMembers) {
         await splitUpStore.addBillMember(
             {
                 billId: bill.id,
@@ -181,10 +186,6 @@ const addMemberToBill = async (selectedMembers: Member[], bill: Bill | undefined
                 amount: roundNumber(bill.amount / selectedMembers.length, { decimals: 0 }), //Distribuye el monto de la factura entre los miembros seleccionados
             } as BillMember
         );
-    }
-
-    for (const deletedBillMember of toRemove) {
-        await splitUpStore.deleteBillMember(deletedBillMember);
     }
 
     await splitUpStore.getBillMembers();
