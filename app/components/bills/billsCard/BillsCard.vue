@@ -1,24 +1,25 @@
 <template>
     <BillsDialog v-model:open="modalOpen" :selectedBill="localBill" />
 
+    <ConfirmDialog v-model:open="confirmOpen" title="Eliminar factura" description="La factura será eliminada definitivamente"
+        @confirm="handleBillDelete(localBill)" />
+
    <div class="relative">
 
-        <div class="hidden md:flex flex-col gap-1 absolute top-3 right-3">
-            <Button variant="ghost" size="icon-sm" class="flex items-center gap-1 text-sm shadow-sm rounded-full cursor-pointer"
-                @click="modalOpen = true">
-                <EditIcon />
-            </Button>
-
-            <ConfirmDialog title="Eliminar factura" description="La factura será eliminada definitivamente"
-                @confirm="handleBillDelete(localBill)">
-                <Button variant="ghost" size="icon-sm" class="flex items-center gap-1 text-sm shadow-sm rounded-full cursor-pointer">
+        <div class="absolute top-3 right-3">
+            <MyDropdownMenu>
+                <DropdownMenuItem class="cursor-pointer" @select="modalOpen = true">
+                    <EditIcon />
+                    Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" class="cursor-pointer" @select="confirmOpen = true">
                     <TrashIcon />
-                </Button>
-            </ConfirmDialog>
+                    Eliminar
+                </DropdownMenuItem>
+            </MyDropdownMenu>
         </div>
 
-
-        <div class="w-full bg-secondary shadow-xl rounded-md p-6 text-sm md:pr-12 pb-4 md:pb-3">
+        <div class="w-full bg-secondary shadow-xl rounded-md p-6 text-sm pr-12 pb-4 md:pb-3">
             <div>
                 <div class="text-center min-w-0 wrap-break-words">
                     <div class="text-base font-bold tracking-widest">
@@ -65,22 +66,6 @@
                     <span v-else-if="billSumary.pending == 0" class="text-green-500">Pagada</span>
                     <span v-else class="text-yellow-500">Sobrepagada</span>
                 </div>
-
-                <div class="flex flex-row justify-end gap-3 md:hidden">
-                     <Button class="shadow-sm cursor-pointer"
-                          @click="modalOpen = true">
-                          <EditIcon />
-                          Editar
-                      </Button>
-          
-                      <ConfirmDialog title="Eliminar factura" description="La factura será eliminada definitivamente"
-                          @confirm="handleBillDelete(localBill)">
-                          <Button class="shadow-sm cursor-pointer">
-                              <TrashIcon />
-                              Eliminar
-                          </Button>
-                      </ConfirmDialog>
-                  </div>
             </div>
         </div>
 
@@ -93,6 +78,8 @@ import ConfirmDialog from '~/components/common/confirmDialog/ConfirmDialog.vue';
 import { TrashIcon, EditIcon } from '@lucide/vue';
 import BillsDialog from '~/components/bills/billsDialog/BillsDialog.vue';
 import MyTagsInput from '~/components/common/myTagsInput/MyTagsInput.vue';
+import MyDropdownMenu from '~/components/common/myDropdownMenu/MyDropdownMenu.vue';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const props = defineProps<Props>();
 
@@ -101,6 +88,7 @@ interface Props {
 }
 
 const modalOpen = ref(false);
+const confirmOpen = ref(false);
 
 const splitUpStore = useSplitUpStore();
 

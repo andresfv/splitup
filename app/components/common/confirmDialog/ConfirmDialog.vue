@@ -1,6 +1,6 @@
 <template>
     <Dialog v-model:open="open">
-        <DialogTrigger as-child>
+        <DialogTrigger v-if="$slots.default" as-child>
             <slot />
         </DialogTrigger>
 
@@ -43,7 +43,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const open = ref(false);
+//Permite abrir el dialog desde afuera (v-model:open) cuando no se usa el slot como trigger
+const open = defineModel<boolean>('open', { default: false });
 
 const emit = defineEmits<{
     (e: 'confirm'): void
