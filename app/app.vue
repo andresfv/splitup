@@ -1,7 +1,10 @@
 <template>
   <div>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <!-- ColorScheme evita flicker SSR -->
+    <ColorScheme> 
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </ColorScheme>
   </div>
 </template>

@@ -10,7 +10,7 @@ declare global {
      * Representa un miembro que participa en las compras compartidas.
      */
     interface Member {
-        id: string;
+        id: number;
         name: string;
         active: boolean;
     }
@@ -19,38 +19,63 @@ declare global {
      * Representa un lugar donde se realizan las compras.
      */
     interface Place {
-        id: string;
+        id: number;
         name: string;
-    }
-
-    /**
-     * Representa una semana en el calendario para agrupar las compras.
-     */
-    interface Week {
-        id: string;
-        code: string;
-        startDate: Date;
-        endDate: Date;
     }
 
     /**
      * Representa una compra realizada en un lugar específico durante una semana determinada.
      */
-    interface Purchase {
-        id: string;
-        week: Week;
-        place: Place;
+    interface Bill {
+        id: number;
+        placeId: number;
         amount: number;
-        isPaid: boolean;
-        createdAt: Date;
+        date: Date;
     }
 
     /**
      * Representa la relación entre una compra y un miembro, incluyendo la cantidad que le corresponde pagar al miembro.
      */
-    interface PurchaseMember {
-        purchase: Purchase;
-        member: Member;
-        shareAmount: number;
+    interface BillMember {
+        id: number;
+        billId: number;
+        memberId: number;
+        amount: number;
+        isPaid: boolean;
+    }
+
+    /**
+     * Representa un ítem de factura que se muestra en la UI, 
+     * incluyendo el nombre del lugar, la fecha, el monto y si está pagado o no.
+     */
+    interface BillMemberDetailsDTO {
+        id: number;
+        placeName: string;
+        date: Date;
+        amount: number;
+        isPaid: boolean;
+        isSelected: boolean;
+    }
+
+
+    interface BillDetailsDTO {
+        id: number;
+        placeName: string;
+        date: Date;
+        totalAmount: number;
+        paidAmount: number;
+        pendingAmount: number;
+    }
+
+    /**
+     * Representa un resumen de las facturas por persona, incluyendo 
+     * el total, lo pagado, lo pendiente y la cantidad de facturas.
+     * No BD, solo para mostrar en la UI.
+     */
+    interface BillSummaryDTO {
+        total: number;
+        paid: number;
+        pending: number;
+        count: number;
     }
 }
