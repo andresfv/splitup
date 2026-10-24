@@ -31,21 +31,17 @@
             </div>
         </div>
 
-      <div v-if="montoPendiente > 0 && !isExporting">
-            <Button class="w-full mt-4" 
-                :size="'sm'" 
-                title="Marcar todo como pagado" 
-                @click="$emit('markAsPaid')">
-                Marcar todo como pagado
+        <div v-if="editMode && !isExporting" class="grid grid-cols-2 gap-2 mt-4">
+            <Button variant="outline"
+                :size="'sm'"
+                title="Cancelar"
+                @click="$emit('cancel')">
+                Cancelar
             </Button>
-        </div>
-
-        <div v-if="!isExporting">
-            <Button class="w-full mt-4" 
-                :size="'sm'" 
-                title="Exportar" 
-                @click="$emit('exportPng')">
-                Exportar
+            <Button :size="'sm'"
+                title="Guardar"
+                @click="$emit('save')">
+                Guardar
             </Button>
         </div>
 
@@ -60,7 +56,10 @@ defineProps({
     montoSeleccionados: Number,
     montoPagado: Number,
     montoPendiente: Number,
-    isExporting: Boolean
+    isExporting: Boolean,
+    editMode: Boolean
 })
+
+defineEmits(['save', 'cancel'])
 
 </script>

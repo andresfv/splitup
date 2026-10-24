@@ -57,6 +57,14 @@ declare global {
         isSelected: boolean;
     }
 
+    /**
+     * Valores editables de un ítem de factura mientras la tabla está en modo edición.
+     * No BD, solo para la UI.
+     */
+    interface BillItemDraftDTO {
+        amount: number;
+        isPaid: boolean;
+    }
 
     interface BillDetailsDTO {
         id: number;

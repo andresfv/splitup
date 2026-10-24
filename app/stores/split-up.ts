@@ -432,7 +432,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         };
     };
 
-    const updateBillMember = async (billMember: BillMember) => {
+    const updateBillMember = async (billMember: BillMember): Promise<boolean> => {
         try {
             const updatedBill = await $fetch<BillMember>(`/api/bills-members/${billMember.id}`, {
                 method: 'PUT',
@@ -452,8 +452,10 @@ export const useSplitUpStore = defineStore('split-up', () => {
                     b.id === updatedBill.id ? updatedBill : b
                 );
             }
+            return true;
         } catch (e) {
             handleFetchError(e);
+            return false;
         }
     };
 
@@ -514,6 +516,32 @@ export const useSplitUpStore = defineStore('split-up', () => {
         billMember.amount = billItem.amount;
 
         updateBillMember(billMember);
+    }
+
+    /**
+     * Actualiza en bloque el monto y el estado de pago de varias facturas de un miembro.
+     * Muestra un mensaje de éxito solo si todas las actualizaciones fueron correctas.
+     * @param billItems Lista de facturas con los valores editados.
+     */
+    async function updateBillItems(billItems: BillMemberDetailsDTO[]) {
+        if (!billItems.length) return;
+
+        const results = await Promise.all(
+            billItems.map(billItem => {
+                const billMember = billMembers.value.find(b => b.id === billItem.id);
+                if (!billMember) return Promise.resolve(false);
+
+                return updateBillMember({
+                    ...billMember,
+                    amount: billItem.amount,
+                    isPaid: billItem.isPaid,
+                });
+            })
+        );
+
+        if (results.every(Boolean)) {
+            toast.success('Facturas actualizadas correctamente');
+        }
     }
 
     /**
@@ -707,6 +735,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         updateBillMember,
         deleteBillMember,
         updateBillItem,
+        updateBillItems,
         addBillMemberToSelected,
 
         //billItems

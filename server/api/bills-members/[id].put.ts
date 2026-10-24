@@ -25,9 +25,9 @@ export default defineEventHandler(async (event) => {
     );
 
     return {
-      id: id,
-      bill: body.billId,
-      member: body.memberId,
+      id: Number(id),
+      billId: body.billId,
+      memberId: body.memberId,
       amount: body.amount,
       isPaid: body.isPaid
     };

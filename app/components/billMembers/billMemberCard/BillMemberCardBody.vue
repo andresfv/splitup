@@ -1,12 +1,11 @@
 <template>
     <div class="space-y-2">
 
-        <div :class="['font-bold text-center grid', isExporting ? 'grid-cols-3' : 'grid-cols-5']">
+        <div :class="['font-bold text-center grid', isExporting ? 'grid-cols-3' : 'grid-cols-4']">
             <div>Nombre</div>
             <div>Fecha</div>
             <div>Monto</div>
             <div v-if="!isExporting">Pagado</div>
-            <div v-if="!isExporting">Acciones</div>
         </div>
 
         <BillMemberCardRow
@@ -14,7 +13,8 @@
             :key="item.id"
             :billItem="item"
             :isExporting
-            @updateBillItem="updateBillItem"
+            :editMode
+            :draft="drafts[item.id]"
             @selectItem="selectBillItem"
         />
 
@@ -28,15 +28,13 @@ import BillMemberCardRow from './BillMemberCardRow.vue';
 interface Props {
     billItems: Array<BillMemberDetailsDTO>;
     isExporting: boolean;
+    editMode: boolean;
+    drafts: Record<number, BillItemDraftDTO>;
 }
 
 const props = defineProps<Props>();
 
 const splitUpStore = useSplitUpStore();
-
-function updateBillItem(billItem: BillMemberDetailsDTO) {
-    splitUpStore.updateBillItem(billItem);
-}
 
 function selectBillItem(billItem: BillMemberDetailsDTO) {
     splitUpStore.addBillMemberToSelected(billItem);
