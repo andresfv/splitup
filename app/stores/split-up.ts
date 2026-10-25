@@ -7,6 +7,25 @@ export const useSplitUpStore = defineStore('split-up', () => {
     const fromDate = ref<Date | null>(normalizeDate(getFirstDayOfCurrentMonth()));
     const toDate = ref<Date | null>(normalizeDate(getLastDayOfCurrentMonth()));
 
+    // ***BILLS FILTER***
+    const DEFAULT_BILLS_FILTER: BillsFilterDTO = {
+        status: 'all',
+        placeId: null,
+        memberId: null,
+        sortByPlace: 'none',
+    };
+
+    //Filtros aplicados en la pantalla de facturas, se mantienen al navegar entre pantallas
+    const billsFilter = ref<BillsFilterDTO>({ ...DEFAULT_BILLS_FILTER });
+
+    const applyBillsFilter = (filter: BillsFilterDTO) => {
+        billsFilter.value = { ...filter };
+    };
+
+    const resetBillsFilter = () => {
+        billsFilter.value = { ...DEFAULT_BILLS_FILTER };
+    };
+
     // ***MEMBERS***
     const members = ref<Member[]>([]);
 
@@ -361,6 +380,48 @@ export const useSplitUpStore = defineStore('split-up', () => {
     }
 
     /**
+     * Obtiene las facturas dentro de un rango de fechas aplicando los filtros y el ordenamiento de billsFilter.
+     * @param fromDate Fecha de inicio del rango.
+     * @param toDate Fecha de fin del rango.
+     * @returns Lista de facturas filtradas y ordenadas.
+     */
+    const getFilteredBills = (fromDate: Date | null, toDate: Date | null) => {
+        const { status, placeId, memberId, sortByPlace } = billsFilter.value;
+
+        //IDs de facturas que tienen al menos un participante y las del participante seleccionado
+        const billIdsWithMembers = new Set(billMembers.value.map(bm => bm.billId));
+        const billIdsByMember = new Set(
+            billMembers.value.filter(bm => bm.memberId === memberId).map(bm => bm.billId)
+        );
+
+        const filteredBills = getBillsBetweenDates(fromDate, toDate).filter(bill => {
+            if (status === 'paid' && !isBillPaid(bill.id)) return false;
+            if (status === 'pending' && isBillPaid(bill.id)) return false;
+
+            if (placeId !== null && bill.placeId !== placeId) return false;
+
+            if (memberId === 'none' && billIdsWithMembers.has(bill.id)) return false;
+            if (typeof memberId === 'number' && !billIdsByMember.has(bill.id)) return false;
+
+            return true;
+        });
+
+        if (sortByPlace === 'none') {
+            return filteredBills;
+        }
+
+        const placesMap = new Map(places.value.map(p => [p.id, p.name]));
+        const direction = sortByPlace === 'asc' ? 1 : -1;
+
+        //Ordena por nombre de comercio, en caso de empate se mantiene el orden por fecha
+        return filteredBills.sort((a, b) => {
+            const placeA = placesMap.get(a.placeId) ?? '';
+            const placeB = placesMap.get(b.placeId) ?? '';
+            return direction * placeA.localeCompare(placeB, 'es', { sensitivity: 'base' });
+        });
+    }
+
+    /**
      * Obtiene un resumen de una factura específica, incluyendo el total, lo pagado, lo pendiente, la cantidad de miembros asociados y el total de los seleccionados.
      * @param billId El ID de la factura para la cual se desea obtener el resumen.
      * @returns Un objeto BillSummaryDTO con los detalles del resumen de la factura. Si la factura no existe, devuelve un resumen con valores en cero.
@@ -712,6 +773,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         //---properties---
         fromDate,
         toDate,
+        billsFilter,
         members,
         places,
         bills,
@@ -738,6 +800,9 @@ export const useSplitUpStore = defineStore('split-up', () => {
         updateBill,
         deleteBill,
         getBillsBetweenDates,
+        getFilteredBills,
+        applyBillsFilter,
+        resetBillsFilter,
         getBillSumary,
         isBillPaid,
 

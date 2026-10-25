@@ -86,4 +86,26 @@ declare global {
         pending: number;
         count: number;
     }
+
+    /**
+     * Estado de pago por el cual se pueden filtrar las facturas.
+     */
+    type BillPaymentStatus = 'all' | 'pending' | 'paid';
+
+    /**
+     * Dirección de ordenamiento de las facturas por nombre de comercio.
+     */
+    type BillSortDirection = 'none' | 'asc' | 'desc';
+
+    /**
+     * Filtros aplicados a la lista de facturas.
+     * memberId: null = todos los participantes, 'none' = facturas sin participantes.
+     * No BD, solo para la UI.
+     */
+    interface BillsFilterDTO {
+        status: BillPaymentStatus;
+        placeId: number | null;
+        memberId: number | 'none' | null;
+        sortByPlace: BillSortDirection;
+    }
 }
