@@ -15,11 +15,11 @@ const tryAgain = () => location.reload();
     <div class="max-w-xl space-y-6 text-center">
 
       <h1 class="text-[4rem] font-bold text-destructive">
-        Status: {{ error!.statusCode || 'Error' }}
+        Status: {{ error!.status || 'Error' }}
       </h1>
 
       <p class="text-lg font-semibold text-foreground">
-        {{ error!.statusMessage }}
+        {{ error!.statusText }}
       </p>
 
       <div class="flex justify-center gap-4">

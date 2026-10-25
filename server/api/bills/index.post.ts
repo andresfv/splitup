@@ -5,10 +5,9 @@ import { getDb } from '../../utils/db';
  * Crea una nueva factura en la base de datos.
  */
 export default defineEventHandler(async (event) => {
+  const body = await validateBody(event, billSchema);
 
   try {
-
-    const body = await readValidatedBody(event, (data) => billSchema.parse(data));
     const db = await getDb();
 
     const result = await db.run(
@@ -24,7 +23,8 @@ export default defineEventHandler(async (event) => {
       date: body.date
     }
   } catch (error) {
-    console.error('Error al crear la factura:', error);
-    throw createError('Error al crear la factura');
+    handleDbError(error, 'Error al crear la factura', {
+      foreignKey: 'El comercio no existe'
+    });
   }
 });

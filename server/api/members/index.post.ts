@@ -1,19 +1,13 @@
 import { getDb } from '../../utils/db';
-import { z } from 'zod';
-
-const memberCreateSchema = z.object({
-  name: z.string().min(1),
-  active: z.boolean()
-});
+import { memberSchema } from '~~/server/schemas/member.schema';
 
 /**
  * Crea un nuevo miembro en la base de datos.
  */
 export default defineEventHandler(async (event) => {
+  const body = await validateBody(event, memberSchema);
 
   try {
-
-    const body = await readValidatedBody(event, (data) => memberCreateSchema.parse(data));
     const db = await getDb();
 
     const result = await db.run(
@@ -26,9 +20,10 @@ export default defineEventHandler(async (event) => {
       name: body.name,
       active: body.active
     }
-    
+
   } catch (error) {
-    console.error('Error al crear el miembro:', error);
-    throw createError('Error al crear el miembro');
+    handleDbError(error, 'Error al crear el miembro', {
+      unique: 'Ya existe un miembro con ese nombre'
+    });
   }
 });

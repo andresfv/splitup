@@ -5,10 +5,9 @@ import { billMemberSchema } from '~~/server/schemas/billMember.schema';
  * Crea una nueva factura por participante en la base de datos.
  */
 export default defineEventHandler(async (event) => {
+  const body = await validateBody(event, billMemberSchema);
 
   try {
-
-    const body = await readValidatedBody(event, (data) => billMemberSchema.parse(data));
     const db = await getDb();
 
     const result = await db.run(
@@ -24,7 +23,9 @@ export default defineEventHandler(async (event) => {
       isPaid: body.isPaid
     }
   } catch (error) {
-    console.error('Error al crear la factura por participante:', error);
-    throw createError('Error al crear la factura por participante');
+    handleDbError(error, 'Error al crear la factura por participante', {
+      foreignKey: 'La factura o el participante no existe',
+      unique: 'El participante ya está asociado a esta factura'
+    });
   }
 });

@@ -6,24 +6,18 @@ import { getDb } from '../../utils/db';
 * Actualiza un place existente en la base de datos.
  */
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID requerido'
-    });
-  }
+  const id = getIdParam(event);
+  const body = await validateBody(event, billSchema);
 
   try {
-    const body = await readValidatedBody(event, (data) => billSchema.parse(data));
-
     const db = await getDb();
 
-    await db.run(
+    const result = await db.run(
       'UPDATE bill SET place = ?, amount = ?, is_paid = ?, date = ? WHERE id = ?',
       body.placeId, body.amount, body.isPaid ? 1 : 0, body.date, id
     );
+
+    assertFound(result.changes, 'La factura no existe');
 
     return {
       id: id,
@@ -34,7 +28,8 @@ export default defineEventHandler(async (event) => {
     };
 
   } catch (error) {
-    console.error('Error al actualizar la factura:', error);
-    throw createError('Error interno del servidor');
+    handleDbError(error, 'Error al actualizar la factura', {
+      foreignKey: 'El comercio no existe'
+    });
   }
 });

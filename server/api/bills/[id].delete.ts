@@ -4,24 +4,20 @@ import { getDb } from '../../utils/db';
  * Elimina una factura de la base de datos.
  */
 export default defineEventHandler(async (event) => {
-  const { id } = getRouterParams(event);
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID requerido'
-    });
-  }
+  const id = getIdParam(event);
 
   try {
     const db = await getDb();
 
-    await db.run('DELETE FROM bill WHERE id = ?', [id])
+    const result = await db.run('DELETE FROM bill WHERE id = ?', [id])
+
+    assertFound(result.changes, 'La factura no existe');
 
     return { success: true };
-    
+
   } catch (error) {
-    console.error('Error al eliminar la factura:', error);
-    throw createError('Error al eliminar la factura');
+    handleDbError(error, 'Error al eliminar la factura', {
+      foreignKey: 'No se puede eliminar la factura porque tiene participantes asociados'
+    });
   }
 })

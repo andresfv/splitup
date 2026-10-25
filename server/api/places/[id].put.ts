@@ -1,40 +1,31 @@
-import { z } from 'zod';
 import { getDb } from '../../utils/db';
-
-const placeUpdateSchema = z.object({
-  name: z.string().min(1),
-});
+import { placeSchema } from '~~/server/schemas/place.schema';
 
 /**
 * Actualiza un place existente en la base de datos.
  */
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID requerido'
-    });
-  }
+  const id = getIdParam(event);
+  const body = await validateBody(event, placeSchema);
 
   try {
-    const body = await readValidatedBody(event, (data) => placeUpdateSchema.parse(data));
-
     const db = await getDb();
 
-    await db.run(
+    const result = await db.run(
       'UPDATE place SET name = ? WHERE id = ?',
       body.name, id
     );
 
-    return { 
+    assertFound(result.changes, 'El comercio no existe');
+
+    return {
       id: id,
       name: body.name,
      };
 
   } catch (error) {
-    console.error('Error al actualizar el comercio:', error);
-    throw createError('Error interno del servidor');
+    handleDbError(error, 'Error al actualizar el comercio', {
+      unique: 'Ya existe un comercio con ese nombre'
+    });
   }
 });

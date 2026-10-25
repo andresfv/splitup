@@ -1,17 +1,13 @@
-import { z } from 'zod';
 import { getDb } from '../../utils/db';
-
-const placeCreateSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-});
+import { placeSchema } from '~~/server/schemas/place.schema';
 
 /**
  * Crea un nuevo place en la base de datos.
  */
 export default defineEventHandler(async (event) => {
-  try {
-    const body = await readValidatedBody(event, (data) => placeCreateSchema.parse(data));
+  const body = await validateBody(event, placeSchema);
 
+  try {
     const db = await getDb();
 
     const result = await db.run(
@@ -22,9 +18,10 @@ export default defineEventHandler(async (event) => {
     return { id: result.lastID,
       name: body.name
      }
-    
+
   } catch (error) {
-    console.error('Error al crear el comercio:', error);
-    throw createError('Error interno del servidor');
+    handleDbError(error, 'Error al crear el comercio', {
+      unique: 'Ya existe un comercio con ese nombre'
+    });
   }
 });

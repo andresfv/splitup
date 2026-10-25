@@ -6,26 +6,21 @@ import { billMemberSchema } from '~~/server/schemas/billMember.schema';
 * Actualiza una factura por participante existente en la base de datos.
  */
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id');
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID requerido'
-    });
-  }
+  const id = getIdParam(event);
+  const body = await validateBody(event, billMemberSchema);
 
   try {
-    const body = await readValidatedBody(event, (data) => billMemberSchema.parse(data));
     const db = await getDb();
 
-    await db.run(
+    const result = await db.run(
       'UPDATE bill_member SET bill = ?, member = ?, amount = ?, is_paid = ? WHERE id = ?',
       body.billId, body.memberId, body.amount, body.isPaid ? 1 : 0, id
     );
 
+    assertFound(result.changes, 'La factura por participante no existe');
+
     return {
-      id: Number(id),
+      id: id,
       billId: body.billId,
       memberId: body.memberId,
       amount: body.amount,
@@ -33,7 +28,9 @@ export default defineEventHandler(async (event) => {
     };
 
   } catch (error) {
-    console.error('Error al actualizar la factura por participante:', error);
-    throw createError('Error interno del servidor');
+    handleDbError(error, 'Error al actualizar la factura por participante', {
+      foreignKey: 'La factura o el participante no existe',
+      unique: 'El participante ya está asociado a esta factura'
+    });
   }
 });
