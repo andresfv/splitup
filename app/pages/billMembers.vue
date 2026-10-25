@@ -4,6 +4,8 @@
         <h1>Facturas por Persona</h1>
     </div>
 
+    <BillMembersFilterPanel />
+
   <div class="text-center mt-4 mb-4">
 
         <DateRangePicker v-model:fromDate="fromDate" v-model:toDate="toDate" labelFromDate="Desde:"
@@ -21,8 +23,11 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5 p-4">
-        <BillMemberCard v-for="member in members" :key="member.id" :member="member" :fromDate="fromDate"
-            :toDate="toDate" v-if="fromDate && toDate" />
+        <template v-if="pending">
+            <Skeleton v-for="n in 3" :key="n" class="h-80 w-full" />
+        </template>
+        <BillMemberCard v-else-if="fromDate && toDate" v-for="member in members" :key="member.id" :member="member"
+            :fromDate="fromDate" :toDate="toDate" />
     </div>
 
 </template>
@@ -33,13 +38,20 @@ import BillMemberCard from '~/components/billMembers/billMemberCard/BillsMemberC
 // import DivideIcon from '~/components/icons/DivideIcon.vue';
 // import ConfirmDialog from '~/components/common/confirmDialog/ConfirmDialog.vue';
 import DateRangePicker from '~/components/common/dateRangePicker/dateRangePicker.vue';
+import BillMembersFilterPanel from '~/components/billMembers/billMembersFilterPanel/BillMembersFilterPanel.vue';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const splitUpStore = useSplitUpStore();
-const members = computed(() => splitUpStore.members);
 
-const { fromDate, toDate } = storeToRefs(splitUpStore);
+const { fromDate, toDate, billMembersFilter } = storeToRefs(splitUpStore);
 
-await useAsyncData('init-split-data', async () => {
+//Si hay un participante seleccionado en los filtros solo se muestra su card
+const members = computed(() => {
+    const { memberId } = billMembersFilter.value;
+    return memberId === null ? splitUpStore.members : splitUpStore.members.filter(m => m.id === memberId);
+});
+
+const { pending } = await useAsyncData('init-split-data', async () => {
     await splitUpStore.initData();
 });
 

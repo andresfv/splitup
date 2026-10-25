@@ -45,7 +45,7 @@
                         </ComboboxAnchor>
 
                         <ComboboxList class="w-(--reka-combobox-trigger-width)">
-                            <ComboboxInput placeholder="Buscar comercio..." />
+                            <ComboboxInput placeholder="Buscar comercio..." :display-value="() => ''" />
                             <ComboboxEmpty>No se encontraron comercios.</ComboboxEmpty>
                             <ComboboxViewport class="max-h-60">
                                 <ComboboxGroup>

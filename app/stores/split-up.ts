@@ -26,6 +26,28 @@ export const useSplitUpStore = defineStore('split-up', () => {
         billsFilter.value = { ...DEFAULT_BILLS_FILTER };
     };
 
+    // ***BILL MEMBERS FILTER***
+    const DEFAULT_BILL_MEMBERS_FILTER: BillMembersFilterDTO = {
+        status: 'all',
+        placeId: null,
+        memberId: null,
+        sortBy: 'none',
+    };
+
+    //Filtros aplicados en la pantalla de facturas por participante, se mantienen al navegar entre pantallas
+    const billMembersFilter = ref<BillMembersFilterDTO>({ ...DEFAULT_BILL_MEMBERS_FILTER });
+
+    //Al cambiar los filtros se deseleccionan los items para no sumar items ocultos
+    const applyBillMembersFilter = (filter: BillMembersFilterDTO) => {
+        billMembersFilter.value = { ...filter };
+        clearBillMembersSelected();
+    };
+
+    const resetBillMembersFilter = () => {
+        billMembersFilter.value = { ...DEFAULT_BILL_MEMBERS_FILTER };
+        clearBillMembersSelected();
+    };
+
     // ***MEMBERS***
     const members = ref<Member[]>([]);
 
@@ -676,6 +698,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
             billItems.push({
                 id: billMember.id,
+                placeId: bill.placeId,
                 placeName: place.name,
                 date: new Date (bill.date),
                 amount: billMember.amount,
@@ -688,14 +711,47 @@ export const useSplitUpStore = defineStore('split-up', () => {
     }
 
     /**
-     * Calcula el monto total de las facturas de un miembro dentro de un rango de fechas.
+     * Obtiene los items de facturas de un miembro dentro de un rango de fechas aplicando los filtros y el ordenamiento de billMembersFilter.
+     * @param memberId El ID del miembro para el cual se desean obtener los items.
+     * @param fromDate Fecha de inicio del rango.
+     * @param toDate Fecha de fin del rango.
+     * @returns Lista de items filtrados y ordenados.
+     */
+    function getFilteredMemberBillItems(memberId: number, fromDate: Date, toDate: Date): BillMemberDetailsDTO[] {
+        const { status, placeId, sortBy } = billMembersFilter.value;
+
+        const billItems = getMemberBillItemsBetweenDates(memberId, fromDate, toDate).filter(item => {
+            if (status === 'paid' && !item.isPaid) return false;
+            if (status === 'pending' && item.isPaid) return false;
+
+            if (placeId !== null && item.placeId !== placeId) return false;
+
+            return true;
+        });
+
+        switch (sortBy) {
+            case 'place-asc':
+                return billItems.sort((a, b) => a.placeName.localeCompare(b.placeName, 'es', { sensitivity: 'base' }));
+            case 'place-desc':
+                return billItems.sort((a, b) => b.placeName.localeCompare(a.placeName, 'es', { sensitivity: 'base' }));
+            case 'date-asc':
+                return billItems.sort((a, b) => a.date.getTime() - b.date.getTime());
+            case 'date-desc':
+                return billItems.sort((a, b) => b.date.getTime() - a.date.getTime());
+            default:
+                return billItems;
+        }
+    }
+
+    /**
+     * Calcula el monto total de las facturas filtradas de un miembro dentro de un rango de fechas.
      * @param memberId El ID del miembro para el cual se desea calcular el monto.
      * @param fromDate Fecha de inicio del rango.
      * @param toDate Fecha de fin del rango.
      * @returns Monto total de las facturas del miembro dentro del rango de fechas.
      */
     function getMemberBillSummary(memberId: number, fromDate: Date, toDate: Date): BillSummaryDTO {
-        const billItems = getMemberBillItemsBetweenDates(memberId, fromDate, toDate);
+        const billItems = getFilteredMemberBillItems(memberId, fromDate, toDate);
 
         let total = 0;
         let paid = 0;
@@ -774,6 +830,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         fromDate,
         toDate,
         billsFilter,
+        billMembersFilter,
         members,
         places,
         bills,
@@ -818,7 +875,10 @@ export const useSplitUpStore = defineStore('split-up', () => {
 
         //billItems
         getMemberBillItemsBetweenDates,
+        getFilteredMemberBillItems,
         getMemberBillSummary,
+        applyBillMembersFilter,
+        resetBillMembersFilter,
         splitBillAmountsEquallyBetweenMembers,
         payAllBillMemberItems,
 

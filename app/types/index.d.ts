@@ -50,6 +50,7 @@ declare global {
      */
     interface BillMemberDetailsDTO {
         id: number;
+        placeId: number;
         placeName: string;
         date: Date;
         amount: number;
@@ -107,5 +108,22 @@ declare global {
         placeId: number | null;
         memberId: number | 'none' | null;
         sortByPlace: BillSortDirection;
+    }
+
+    /**
+     * Ordenamiento de los items de facturas por participante, por comercio o por fecha.
+     */
+    type BillMemberSortOption = 'none' | 'place-asc' | 'place-desc' | 'date-asc' | 'date-desc';
+
+    /**
+     * Filtros aplicados a la lista de facturas por participante.
+     * memberId: null = todos los participantes.
+     * No BD, solo para la UI.
+     */
+    interface BillMembersFilterDTO {
+        status: BillPaymentStatus;
+        placeId: number | null;
+        memberId: number | null;
+        sortBy: BillMemberSortOption;
     }
 }

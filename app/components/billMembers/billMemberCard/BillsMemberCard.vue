@@ -71,10 +71,10 @@ const editMode = ref(false);
 const drafts = ref<Record<number, BillItemDraftDTO>>({});
 
 /**
- * Obtiene las facturas del miembro dentro del rango de fechas
+ * Obtiene las facturas del miembro dentro del rango de fechas, aplicando los filtros vigentes
  */
 const billsByMemberAndBetween = computed<BillMemberDetailsDTO[]>(() => {
-    return splitUpStore.getMemberBillItemsBetweenDates(props.member.id, props.fromDate, props.toDate);
+    return splitUpStore.getFilteredMemberBillItems(props.member.id, props.fromDate, props.toDate);
 });
 
 const handleMarkAsPaid = () => {

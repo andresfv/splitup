@@ -18,6 +18,10 @@
             @selectItem="selectBillItem"
         />
 
+        <div v-if="billItems.length === 0" class="text-center text-muted-foreground">
+            Sin facturas.
+        </div>
+
     </div>
 
 </template>
