@@ -48,7 +48,12 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const isBillItemSelected = ref<boolean>(false);
+const splitUpStore = useSplitUpStore();
+
+//La selección se deriva del store para que no se pierda al desmontar la fila
+const isBillItemSelected = computed<boolean>(() =>
+    splitUpStore.billMembersSelected.some(bm => bm.id === props.billItem.id)
+);
 
 const containerClass = computed(() => [
   'grid',
@@ -67,12 +72,10 @@ function selectItem() {
     //En modo edición no se seleccionan filas, para no interferir con los campos editables
     if (props.editMode) return;
 
-    isBillItemSelected.value = !isBillItemSelected.value;
-
     //Solo actualiza la propiedad isSelected del billItem, el resto de las propiedades permanecen igual
     const selectedBillItem: BillMemberDetailsDTO = {
         ...props.billItem,
-        isSelected: isBillItemSelected.value,
+        isSelected: !isBillItemSelected.value,
     };
 
     emit('selectItem', selectedBillItem);

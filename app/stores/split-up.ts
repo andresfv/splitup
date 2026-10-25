@@ -399,7 +399,12 @@ export const useSplitUpStore = defineStore('split-up', () => {
     // ***BILL_MEMBERS***
     const billMembers = ref<BillMember[]>([]);
 
-    const billMembersSelected = ref<BillMember[]>([]);
+    //Se guardan solo los IDs para que los montos se tomen siempre de billMembers (incluso tras editar)
+    const billMembersSelectedIds = ref<number[]>([]);
+
+    const billMembersSelected = computed<BillMember[]>(() =>
+        billMembers.value.filter(bm => billMembersSelectedIds.value.includes(bm.id))
+    );
 
     const getBillMembers = async () => {
         billMembers.value = await $fetch<BillMember[]>('/api/bills-members');
@@ -689,13 +694,19 @@ export const useSplitUpStore = defineStore('split-up', () => {
     }
 
     function addBillMemberToSelected(billMemberDto: BillMemberDetailsDTO) {
-        const billMemberItem = billMembers.value.find(bm => bm.id === billMemberDto.id);
         if (billMemberDto.isSelected) {
-            billMembersSelected.value.push(billMemberItem as BillMember);
+            billMembersSelectedIds.value.push(billMemberDto.id);
         }else{
-            billMembersSelected.value = billMembersSelected.value.filter(bm => bm.id !== billMemberDto.id);
+            billMembersSelectedIds.value = billMembersSelectedIds.value.filter(id => id !== billMemberDto.id);
         }
     }
+
+    function clearBillMembersSelected() {
+        billMembersSelectedIds.value = [];
+    }
+
+    //Al cambiar el rango de fechas se deseleccionan todas las facturas
+    watch([fromDate, toDate], clearBillMembersSelected);
 
     return {
         //---properties---
@@ -705,6 +716,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         places,
         bills,
         billMembers,
+        billMembersSelectedIds,
         billMembersSelected,
 
         //---actions---
@@ -737,6 +749,7 @@ export const useSplitUpStore = defineStore('split-up', () => {
         updateBillItem,
         updateBillItems,
         addBillMemberToSelected,
+        clearBillMembersSelected,
 
         //billItems
         getMemberBillItemsBetweenDates,
