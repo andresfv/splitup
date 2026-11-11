@@ -111,6 +111,11 @@ const handleSubmit = async () => {
 
         billAmount.value = roundNumber(billAmount.value, { decimals: 0 });
 
+        //Copia de la selección y el monto antes de cualquier await, para que una
+        //actualización del store mientras se guarda no los sobrescriba
+        const selectedMembers = [...members.value];
+        const newAmount = billAmount.value;
+
         if (bill == null) {
            bill = await splitUpStore.addBill({
                 placeId: billPlace.value.id,
@@ -127,7 +132,7 @@ const handleSubmit = async () => {
             } as Bill);
         }
         
-        await addMemberToBill(members.value, bill);
+        await addMemberToBill(selectedMembers, bill ? { ...bill, amount: newAmount } : bill);
         
         splitUpStore.getBills();
 
@@ -145,11 +150,14 @@ const handleSubmit = async () => {
     }
 };
 
-watch(props, (newProps) => {
-    if(newProps.selectedBill){
-        billPlace.value = splitUpStore.places.find(p => p.id === newProps.selectedBill?.placeId) || {} as Place;
-        billDate.value = newProps.selectedBill?.date ? new Date(newProps.selectedBill.date) : null;
-        billAmount.value = newProps.selectedBill?.amount || 0;
+//Solo recarga el formulario al abrir el diálogo o cambiar de factura,
+//no cuando el store reemplaza el objeto de la factura al guardar
+watch(() => [props.open, props.selectedBill?.id], () => {
+    const selectedBill = props.selectedBill;
+    if(selectedBill){
+        billPlace.value = splitUpStore.places.find(p => p.id === selectedBill.placeId) || {} as Place;
+        billDate.value = selectedBill.date ? new Date(selectedBill.date) : null;
+        billAmount.value = selectedBill.amount || 0;
         members.value = loadSelectedMembers.value;
     }else {
         billPlace.value = {} as Place;
